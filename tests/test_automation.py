@@ -145,19 +145,25 @@ class TestNavigationOptimization:
     async def test_navigate_to_matches_if_needed_navigates_when_elsewhere(self):
         """Testa que navegação ocorre quando não está na página."""
         from automation.browser import BrowserController
-        
+
         mock_page = AsyncMock()
         mock_page.url = "https://tinder.com/app/messages/abc123"
         mock_page.goto = AsyncMock()
         mock_page.wait_for_load_state = AsyncMock()
         mock_page.wait_for_selector = AsyncMock()
-        
+
         controller = BrowserController()
         controller.page = mock_page
-        
-        result = await controller.navigate_to_matches_if_needed()
-        
+        # Marca como inicializado para que navigate_to use a página mockada
+        # em vez de lançar um navegador real (que não existe no CI).
+        controller._is_initialized = True
+
+        with patch("automation.browser.asyncio.sleep", new=AsyncMock()), \
+             patch("automation.browser.async_random_delay", new=AsyncMock()):
+            result = await controller.navigate_to_matches_if_needed()
+
         assert result == True  # Navegou
+        mock_page.goto.assert_called_once()
     
     @pytest.mark.asyncio
     async def test_navigate_to_match_if_needed_skips_when_already_there(self):

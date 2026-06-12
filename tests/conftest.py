@@ -20,6 +20,30 @@ from database.models import Base, Match, Message, MyProfile
 
 
 # ============================================
+# Rede de segurança: nenhum teste deve lançar um navegador real
+# ============================================
+
+@pytest.fixture(autouse=True)
+def _no_real_browser():
+    """
+    Impede que testes iniciem um navegador Playwright de verdade.
+
+    Testes devem mockar o browser/página. Um launch real depende de binários
+    do Chromium e de display gráfico — frágil e indisponível no CI. Se algum
+    teste tentar iniciar o Playwright, falha aqui com mensagem clara em vez de
+    um erro obscuro no ambiente de CI.
+    """
+    def _fail(*_args, **_kwargs):
+        raise RuntimeError(
+            "Tentativa de iniciar um navegador Playwright real em um teste. "
+            "Mocke o browser/página (ou defina controller._is_initialized = True)."
+        )
+
+    with patch("automation.browser.async_playwright", side_effect=_fail):
+        yield
+
+
+# ============================================
 # Fixtures de Banco de Dados
 # ============================================
 
