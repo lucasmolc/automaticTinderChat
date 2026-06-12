@@ -999,10 +999,12 @@ def health_check():
     except Exception:
         checks['openai_configured'] = False
     
-    # Status geral
-    is_healthy = checks['database'] and checks['openai_configured']
-    status = 'healthy' if is_healthy else 'degraded'
-    
+    # Status geral: o banco é o componente crítico. A chave de IA é opcional
+    # (pode ser configurada pela interface), então sua ausência não torna o
+    # serviço indisponível — fica apenas registrada em checks para observabilidade.
+    is_healthy = checks['database']
+    status = 'healthy' if is_healthy else 'unhealthy'
+
     return jsonify({
         'status': status,
         'checks': checks
