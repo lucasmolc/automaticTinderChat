@@ -33,13 +33,18 @@ def _no_real_browser():
     teste tentar iniciar o Playwright, falha aqui com mensagem clara em vez de
     um erro obscuro no ambiente de CI.
     """
+    # Importa o submódulo explicitamente: patch por string falha se
+    # automation.browser ainda não tiver sido carregado (varia com a ordem
+    # de coleta dos testes, como ocorreu no CI em Python 3.9).
+    import automation.browser as browser_mod
+
     def _fail(*_args, **_kwargs):
         raise RuntimeError(
             "Tentativa de iniciar um navegador Playwright real em um teste. "
             "Mocke o browser/página (ou defina controller._is_initialized = True)."
         )
 
-    with patch("automation.browser.async_playwright", side_effect=_fail):
+    with patch.object(browser_mod, "async_playwright", side_effect=_fail):
         yield
 
 
