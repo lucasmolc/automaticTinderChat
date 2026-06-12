@@ -1,0 +1,969 @@
+{% extends "base.html" %}
+
+{% block title %}Matches{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Matches</h1>
+        <p class="text-muted mb-0">Lista de todos os matches</p>
+    </div>
+    <div class="d-flex gap-2">
+        <input type="text" class="search-bar" id="searchInput" placeholder="Buscar por nome..." onkeyup="debounceSearch()">
+        <button class="btn btn-outline-secondary" onclick="loadMatches()">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">
+        <i class="bi bi-grid-3x3-gap me-1"></i> Todos
+    </button>
+    <button class="filter-btn" data-filter="new" onclick="setFilter('new', this)">
+        <i class="bi bi-person-plus me-1"></i> Novos
+    </button>
+    <button class="filter-btn" data-filter="awaiting" onclick="setFilter('awaiting', this)">
+        <i class="bi bi-hourglass-split me-1"></i> Aguardando
+    </button>
+    <button class="filter-btn" data-filter="active" onclick="setFilter('active', this)">
+        <i class="bi bi-chat-dots me-1"></i> Ativos
+    </button>
+    <button class="filter-btn" data-filter="blocked" onclick="setFilter('blocked', this)">
+        <i class="bi bi-slash-circle me-1"></i> Bloqueados
+    </button>
+    
+</div>
+
+<!-- Matches Grid -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%">Match</th>
+                        <th>Última Mensagem</th>
+                        <th>Status</th>
+                        <th>Mensagens</th>
+                        <th>Data</th>
+                        <th style="width: 50px"></th>
+                    </tr>
+                </thead>
+                <tbody id="matches-table">
+                    <tr>
+                        <td colspan="6">
+                            <div class="loading-spinner">
+                                <div class="spinner-border" role="status"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted small">
+        Mostrando <span id="showing-count">0</span> de <span id="total-count">0</span> matches
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" id="btn-prev" onclick="prevPage()" disabled>
+            <i class="bi bi-chevron-left"></i> Anterior
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" id="btn-next" onclick="nextPage()">
+            Próximo <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Match Detail Modal -->
+<div class="modal fade" id="matchModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Match</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs mb-3" id="matchModalTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messagesTab" type="button" role="tab">
+                            <i class="bi bi-chat-dots me-2"></i>Mensagens
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profileTab" type="button" role="tab">
+                            <i class="bi bi-person me-2"></i>Perfil
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="report-tab" data-bs-toggle="tab" data-bs-target="#reportTab" type="button" role="tab">
+                            <i class="bi bi-clipboard-data me-2"></i>Relatório
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tabs Content -->
+                <div class="tab-content" id="matchModalTabContent">
+                    <!-- Messages Tab -->
+                    <div class="tab-pane fade show active" id="messagesTab" role="tabpanel">
+                        <div class="row">
+                            <!-- Match Info Sidebar -->
+                            <div class="col-md-3 text-center border-end">
+                                <img id="modalPhoto" src="" class="rounded-4 mb-3" style="width: 120px; height: 120px; object-fit: cover; margin: 0 auto; display: block;" alt="">
+                                <h6 id="modalName" class="mb-0"></h6>
+                                <small class="text-muted" id="modalAge"></small>
+                                <div class="mt-2">
+                                    <span class="badge" id="modalStatus"></span>
+                                </div>
+                                <div class="text-start small mt-3" id="modalBio"></div>
+                                
+                                <!-- Status Toggles -->
+                                <div class="mt-3 pt-3 border-top">
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="modalResendToggle" onchange="toggleMatchStatus('resend')">
+                                        <label class="form-check-label small" for="modalResendToggle">
+                                            <i class="bi bi-arrow-repeat text-warning"></i> Reenviar Mensagem
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="modalWhatsappToggle" onchange="toggleMatchStatus('whatsapp')">
+                                        <label class="form-check-label small" for="modalWhatsappToggle">
+                                            <i class="bi bi-whatsapp text-success"></i> WhatsApp
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="modalDateToggle" onchange="toggleMatchStatus('date')">
+                                        <label class="form-check-label small" for="modalDateToggle">
+                                            <i class="bi bi-calendar-heart text-danger"></i> Encontro
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="modalBlockToggle" onchange="toggleMatchStatus('blocked')">
+                                        <label class="form-check-label small" for="modalBlockToggle">
+                                            <i class="bi bi-slash-circle text-secondary"></i> Bloqueado
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Chat -->
+                            <div class="col-md-9">
+                                <div class="chat-container" id="modalChat" style="height: 500px; overflow-y: auto;">
+                                    <div class="empty-state">
+                                        <i class="bi bi-chat"></i>
+                                        <p>Carregando mensagens...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade" id="profileTab" role="tabpanel">
+                        <div class="row g-4">
+                            <div class="col-12 col-md-8">
+                                <div class="card bg-dark">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Informações do Perfil</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <label class="text-muted small">Nome</label>
+                                                <div id="profile-name" class="fw-bold">-</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">Idade</label>
+                                                <div id="profile-age">-</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">Distância</label>
+                                                <div id="profile-distance">-</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">Cidade</label>
+                                                <div id="profile-city">-</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">Trabalho</label>
+                                                <div id="profile-job">-</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">Escola</label>
+                                                <div id="profile-school">-</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">Gênero</label>
+                                                <div id="profile-gender">-</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="text-muted small">O que procura</label>
+                                                <div id="profile-intent">-</div>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="text-muted small">Bio</label>
+                                                <div id="profile-bio">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Interests -->
+                                <div class="card bg-dark mt-3" id="interests-card" style="display: none;">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-heart me-2"></i>Interesses</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="profile-interests" class="d-flex flex-wrap gap-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Photos -->
+                            <div class="col-12 col-md-4">
+                                <div class="card bg-dark">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-images me-2"></i>Fotos</h6>
+                                    </div>
+                                    <div class="card-body position-relative">
+                                        <div id="profile-photos" style="min-height: 200px;"></div>
+                                        <!-- Navigation buttons (hidden if only 1 photo) -->
+                                        <button id="photo-prev" class="btn btn-sm btn-dark position-absolute top-50 start-0 translate-middle-y ms-2" style="display: none; opacity: 0.7;" onclick="navigatePhotos(-1)">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+                                        <button id="photo-next" class="btn btn-sm btn-dark position-absolute top-50 end-0 translate-middle-y me-2" style="display: none; opacity: 0.7;" onclick="navigatePhotos(1)">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Tab -->
+                    <div class="tab-pane fade" id="reportTab" role="tabpanel">
+                        <div class="text-center mb-3">
+                            <button class="btn btn-primary" id="btnGenerateReport" onclick="generateMatchReport()">
+                                <i class="bi bi-file-earmark-text me-2"></i>Gerar Relatório
+                            </button>
+                        </div>
+                        
+                        <div id="report-loading" style="display: none;">
+                            <div class="loading-spinner">
+                                <div class="spinner-border" role="status"></div>
+                                <p>Gerando relatório com IA...</p>
+                            </div>
+                        </div>
+                        
+                        <div id="report-content" style="display: none;">
+                            <!-- Stats -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <div class="icon purple">
+                                            <i class="bi bi-thermometer-half"></i>
+                                        </div>
+                                        <div class="value" id="report-temperature">-</div>
+                                        <div class="label">Temperatura</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <div class="icon green">
+                                            <i class="bi bi-heart-fill"></i>
+                                        </div>
+                                        <div class="value" id="report-engagement">-</div>
+                                        <div class="label">Engajamento</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <div class="icon blue">
+                                            <i class="bi bi-graph-up"></i>
+                                        </div>
+                                        <div class="value" id="report-progression">-</div>
+                                        <div class="label">Progressão</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Report Cards -->
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="card bg-dark">
+                                        <div class="card-header"><h6 class="mb-0"><i class="bi bi-chat-text me-2"></i>Resumo</h6></div>
+                                        <div class="card-body"><p id="report-summary" class="mb-0">-</p></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-dark">
+                                        <div class="card-header"><h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tópicos Sugeridos</h6></div>
+                                        <div class="card-body" id="report-topics" style="max-height: 300px; overflow-y: auto;"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-dark">
+                                        <div class="card-header"><h6 class="mb-0"><i class="bi bi-chat-right-text me-2"></i>Mensagens Sugeridas</h6></div>
+                                        <div class="card-body" id="report-messages" style="max-height: 300px; overflow-y: auto;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" data-bs-backdrop="static" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0" style="box-shadow: none;">
+            <div class="modal-body text-center p-0 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 10; filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));"></button>
+                <img id="photoModalImg" src="" class="photo-modal-img rounded-3" alt="" style="max-width: 100%; max-height: 90vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Backdrop do modal de foto mais escuro */
+    #photoModal.show ~ .modal-backdrop,
+    #photoModal ~ .modal-backdrop.show {
+        background-color: rgba(0, 0, 0, 0.9) !important;
+        z-index: 1055 !important;
+    }
+    
+    /* Garantir que o modal de foto fique acima de tudo */
+    #photoModal {
+        z-index: 1060 !important;
+    }
+    
+    /* Cursor de zoom out quando expandido */
+    #photoModal .photo-modal-img {
+        cursor: zoom-out;
+    }
+    
+    /* Badge de perfil verificado */
+    .verified-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        background: linear-gradient(135deg, #00a3ff 0%, #0085d1 100%);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        border: 2px solid var(--bg-tertiary);
+        box-shadow: 0 2px 4px rgba(0, 163, 255, 0.4);
+    }
+    
+    .verified-badge i {
+        font-size: 9px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentFilter = 'all';
+    let currentSearch = '';
+    let currentOffset = 0;
+    const limit = 20;
+    let totalMatches = 0;
+    let searchTimeout;
+    let currentMatchId = null;  // ID do match atual no modal
+    let currentMatchProfileLoaded = false;
+    let currentMatchReportLoaded = false;
+    let currentPhotos = [];  // Array de fotos do perfil
+    let currentPhotoIndex = 0;  // Índice da foto atual
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMatches();
+        
+        // Event listeners para as tabs
+        document.getElementById('profile-tab').addEventListener('shown.bs.tab', function() {
+            if (!currentMatchProfileLoaded && currentMatchId) {
+                loadMatchProfile();
+            }
+        });
+        
+        document.getElementById('report-tab').addEventListener('shown.bs.tab', function() {
+            if (!currentMatchReportLoaded && currentMatchId) {
+                // Tentar carregar relatório existente automaticamente
+                loadExistingReport();
+            }
+        });
+    });
+    
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentSearch = document.getElementById('searchInput').value;
+            currentOffset = 0;
+            loadMatches();
+        }, 300);
+    }
+    
+    function setFilter(filter, btn) {
+        currentFilter = filter;
+        currentOffset = 0;
+        
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        loadMatches();
+    }
+    
+    async function loadMatches() {
+        const params = new URLSearchParams({
+            status: currentFilter,
+            search: currentSearch,
+            show_blocked: currentFilter === 'blocked',
+            limit: limit,
+            offset: currentOffset
+        });
+        
+        try {
+            const response = await fetch(`/api/matches?${params}`);
+            const result = await response.json();
+            
+            const tbody = document.getElementById('matches-table');
+            
+            if (result.success && result.data.length > 0) {
+                totalMatches = result.total;
+                
+                tbody.innerHTML = result.data.map(match => `
+                    <tr class="fade-in" ondblclick="showMatchDetails(${match.id})" style="cursor: pointer;">
+                        <td>
+                            <div class="match-info">
+                                <div class="position-relative d-inline-block">
+                                    ${match.photo_url && (match.photo_url.startsWith('http://') || match.photo_url.startsWith('https://'))
+                                        ? `<img src="${match.photo_url}" class="match-avatar" alt="${match.name}" 
+                                            onclick="event.stopPropagation(); showPhoto('${match.photo_url}')" style="cursor: pointer;"
+                                            onerror="this.outerHTML='<div class=\\'match-avatar placeholder\\'><i class=\\'bi bi-person\\'></i></div>'">`
+                                        : `<div class="match-avatar placeholder"><i class="bi bi-person"></i></div>`
+                                    }
+                                    ${match.is_verified ? `<span class="verified-badge" title="Perfil verificado"><i class="bi bi-patch-check-fill"></i></span>` : ''}
+                                </div>
+                                <div>
+                                    <div class="match-name">${match.name}</div>
+                                    <div class="match-age">${match.age ? match.age + ' anos' : '-'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="message-preview ${match.last_message_from_me ? 'from-me' : ''}">
+                                ${match.last_message || '-'}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-${match.status_color}">${match.status_label}</span>
+                            ${match.pending_resend ? '<i class="bi bi-arrow-repeat text-warning ms-2" title="Reenvio pendente"></i>' : ''}
+                            ${match.whatsapp_obtained ? '<i class="bi bi-whatsapp text-success ms-2" title="WhatsApp obtido"></i>' : ''}
+                            ${match.date_confirmed ? '<i class="bi bi-calendar-heart text-info ms-2" title="Encontro confirmado"></i>' : ''}
+                        </td>
+                        <td>
+                            <span class="text-muted">${match.message_count || 0}</span>
+                        </td>
+                        <td class="text-muted small" title="${match.matched_at ? 'Match em: ' + formatDate(match.matched_at) : ''}">
+                            ${formatRelativeTime(match.matched_at || match.created_at)}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="showMatchDetails(${match.id})">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Update pagination
+                document.getElementById('showing-count').textContent = 
+                    `${currentOffset + 1}-${Math.min(currentOffset + result.data.length, totalMatches)}`;
+                document.getElementById('total-count').textContent = totalMatches;
+                
+                document.getElementById('btn-prev').disabled = currentOffset === 0;
+                document.getElementById('btn-next').disabled = currentOffset + limit >= totalMatches;
+                
+            } else {
+                totalMatches = 0;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="bi bi-people"></i>
+                                <p>Nenhum match encontrado</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                
+                document.getElementById('showing-count').textContent = '0';
+                document.getElementById('total-count').textContent = '0';
+                document.getElementById('btn-prev').disabled = true;
+                document.getElementById('btn-next').disabled = true;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar matches:', error);
+        }
+    }
+    
+    function prevPage() {
+        if (currentOffset > 0) {
+            currentOffset -= limit;
+            loadMatches();
+        }
+    }
+    
+    function nextPage() {
+        if (currentOffset + limit < totalMatches) {
+            currentOffset += limit;
+            loadMatches();
+        }
+    }
+    
+    async function showMatchDetails(matchId) {
+        try {
+            const response = await fetch(`/api/matches/${matchId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const match = result.data;
+                
+                // Guardar ID do match atual e resetar flags
+                currentMatchId = matchId;
+                currentMatchProfileLoaded = false;
+                currentMatchReportLoaded = false;
+                
+                // Update modal sidebar
+                document.getElementById('modalName').textContent = match.name;
+                document.getElementById('modalAge').textContent = match.age ? `${match.age} anos` : '';
+                
+                const photoEl = document.getElementById('modalPhoto');
+                if (match.photo_url && (match.photo_url.startsWith('http://') || match.photo_url.startsWith('https://'))) {
+                    photoEl.src = match.photo_url;
+                    photoEl.style.display = 'block';
+                    photoEl.onerror = function() {
+                        this.style.display = 'none';
+                    };
+                } else {
+                    photoEl.style.display = 'none';
+                }
+                
+                // Status badge
+                const statusEl = document.getElementById('modalStatus');
+                let statusClass = 'bg-primary';
+                let statusLabel = 'Ativo';
+                
+                if (match.whatsapp_obtained) {
+                    statusClass = 'bg-success';
+                    statusLabel = 'WhatsApp Obtido';
+                } else if (match.date_confirmed) {
+                    statusClass = 'bg-info';
+                    statusLabel = 'Encontro Marcado';
+                } else if (match.is_blocked) {
+                    statusClass = 'bg-danger';
+                    statusLabel = 'Bloqueado';
+                } else if (!match.has_messages) {
+                    statusClass = 'bg-success';
+                    statusLabel = 'Novo';
+                }
+                
+                statusEl.className = `badge ${statusClass}`;
+                statusEl.textContent = statusLabel;
+                
+                // Toggles de status
+                document.getElementById('modalResendToggle').checked = match.pending_resend || false;
+                document.getElementById('modalWhatsappToggle').checked = match.whatsapp_obtained || false;
+                document.getElementById('modalDateToggle').checked = match.date_confirmed || false;
+                document.getElementById('modalBlockToggle').checked = match.is_blocked || false;
+                
+                // Bio
+                document.getElementById('modalBio').innerHTML = match.bio 
+                    ? `<small class="text-muted">${match.bio}</small>` 
+                    : '';
+                
+                // Messages
+                renderModalMessages(match.messages || []);
+                
+                // Resetar tabs
+                document.getElementById('messages-tab').click();
+                currentMatchProfileLoaded = false;
+                currentMatchReportLoaded = false;
+                
+                // Show modal
+                new bootstrap.Modal(document.getElementById('matchModal')).show();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar detalhes:', error);
+        }
+    }
+    
+    function renderModalMessages(messages) {
+        const chatEl = document.getElementById('modalChat');
+        if (messages && messages.length > 0) {
+            chatEl.innerHTML = messages.map(msg => `
+                <div class="chat-message ${msg.is_from_me ? 'from-me' : 'from-them'}">
+                    ${msg.content}
+                    ${msg.sent_at ? `<div class="chat-time">${formatDate(msg.sent_at)}</div>` : ''}
+                </div>
+            `).join('');
+            
+            // Scroll to bottom
+            chatEl.scrollTop = chatEl.scrollHeight;
+        } else {
+            chatEl.innerHTML = `
+                <div class="empty-state py-4">
+                    <i class="bi bi-chat"></i>
+                    <p>Nenhuma mensagem ainda</p>
+                </div>
+            `;
+        }
+    }
+    
+    async function loadMatchProfile() {
+        try {
+            const response = await fetch(`/api/matches/${currentMatchId}/profile`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const profile = result.profile;
+                currentMatchProfileLoaded = true;
+                
+                document.getElementById('profile-name').textContent = profile.name || '-';
+                document.getElementById('profile-age').textContent = profile.age ? `${profile.age} anos` : '-';
+                document.getElementById('profile-distance').textContent = profile.distance_km ? `${profile.distance_km} km` : '-';
+                document.getElementById('profile-city').textContent = profile.city || '-';
+                document.getElementById('profile-job').textContent = profile.job_title || '-';
+                document.getElementById('profile-school').textContent = profile.school || '-';
+                document.getElementById('profile-gender').textContent = formatGender(profile.gender);
+                document.getElementById('profile-intent').textContent = formatIntent(profile.relationship_intent);
+                document.getElementById('profile-bio').textContent = profile.bio || 'Sem bio';
+                
+                // Interests
+                if (profile.interests && profile.interests.length > 0) {
+                    document.getElementById('interests-card').style.display = 'block';
+                    document.getElementById('profile-interests').innerHTML = profile.interests.map(i => 
+                        `<span class="badge bg-secondary">${i}</span>`
+                    ).join('');
+                }
+                
+                // Photos
+                console.log('Profile photos:', profile.photos);
+                if (profile.photos && profile.photos.length > 0) {
+                    currentPhotos = profile.photos;
+                    currentPhotoIndex = 0;
+                    console.log('Setting currentPhotos:', currentPhotos);
+                    displayCurrentPhoto();
+                    
+                    // Show navigation if more than 1 photo
+                    if (profile.photos.length > 1) {
+                        document.getElementById('photo-prev').style.display = 'block';
+                        document.getElementById('photo-next').style.display = 'block';
+                    } else {
+                        document.getElementById('photo-prev').style.display = 'none';
+                        document.getElementById('photo-next').style.display = 'none';
+                    }
+                } else {
+                    console.log('No photos found');
+                    currentPhotos = [];
+                    document.getElementById('profile-photos').innerHTML = '<p class="text-muted small">Sem fotos</p>';
+                    document.getElementById('photo-prev').style.display = 'none';
+                    document.getElementById('photo-next').style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar perfil:', error);
+        }
+    }
+    
+    async function generateMatchReport() {
+        if (!currentMatchId) return;
+        
+        try {
+            const btn = document.getElementById('btnGenerateReport');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gerando...';
+            
+            document.getElementById('report-loading').style.display = 'block';
+            document.getElementById('report-content').style.display = 'none';
+            
+            // Usar ?generate=true para gerar novo relatório (consome tokens)
+            const response = await fetch(`/api/matches/${currentMatchId}/report?generate=true`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const report = result.report;
+                currentMatchReportLoaded = true;
+                
+                // Scores
+                document.getElementById('report-temperature').textContent = 
+                    formatTemperature(report.conversation_temperature);
+                document.getElementById('report-engagement').textContent = 
+                    `${report.engagement_score?.toFixed(1) || '-'}/10`;
+                document.getElementById('report-progression').textContent = 
+                    `${report.progression_score?.toFixed(1) || '-'}/10`;
+                
+                // Summary
+                document.getElementById('report-summary').textContent = 
+                    report.conversation_summary || 'Nenhum resumo disponível';
+                
+                // Topics
+                const topicsEl = document.getElementById('report-topics');
+                if (report.topic_suggestions && report.topic_suggestions.length > 0) {
+                    topicsEl.innerHTML = report.topic_suggestions.map(t => `
+                        <div class="mb-3 p-2 border rounded">
+                            <strong>${t.topic}</strong>
+                            <p class="text-muted small mb-1">${t.reason}</p>
+                            <p class="mb-0 small"><em>"${t.example}"</em></p>
+                        </div>
+                    `).join('');
+                } else {
+                    topicsEl.innerHTML = '<p class="text-muted">Nenhuma sugestão</p>';
+                }
+                
+                // Messages
+                const messagesEl = document.getElementById('report-messages');
+                if (report.next_message_suggestions && report.next_message_suggestions.length > 0) {
+                    messagesEl.innerHTML = report.next_message_suggestions.map(m => 
+                        `<div class="badge bg-primary mb-2 text-start" style="white-space: normal; display: block;">${m}</div>`
+                    ).join('');
+                } else {
+                    messagesEl.innerHTML = '<p class="text-muted">Nenhuma sugestão</p>';
+                }
+                
+                document.getElementById('report-loading').style.display = 'none';
+                document.getElementById('report-content').style.display = 'block';
+            } else if (result.error_type === 'budget_exceeded') {
+                // Tratamento especial para erro de budget
+                document.getElementById('report-loading').style.display = 'none';
+                document.getElementById('report-content').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Budget Excedido!</strong><br>
+                        O limite de gastos da API de IA foi atingido. Verifique seu plano ou adicione créditos.
+                    </div>
+                `;
+                document.getElementById('report-content').style.display = 'block';
+            } else {
+                document.getElementById('report-loading').style.display = 'none';
+                customAlert({ title: 'Erro', message: 'Erro ao gerar relatório: ' + (result.error || 'Erro desconhecido'), type: 'danger' });
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-file-earmark-text me-2"></i>Gerar Relatório';
+        } catch (error) {
+            console.error('Erro ao gerar relatório:', error);
+            document.getElementById('report-loading').style.display = 'none';
+            customAlert({ title: 'Erro', message: 'Erro ao gerar relatório', type: 'danger' });
+            
+            const btn = document.getElementById('btnGenerateReport');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-file-earmark-text me-2"></i>Gerar Relatório';
+        }
+    }
+    
+    async function loadExistingReport() {
+        if (!currentMatchId) return;
+        
+        console.log('Tentando carregar relatório existente para match:', currentMatchId);
+        
+        try {
+            // Não usar ?generate=true - apenas busca relatório existente no banco
+            const response = await fetch(`/api/matches/${currentMatchId}/report`);
+            const result = await response.json();
+            
+            console.log('Resposta da API:', result);
+            
+            if (result.success && result.report) {
+                const report = result.report;
+                currentMatchReportLoaded = true;
+                
+                console.log('Dados do relatório:', {
+                    temperature: report.conversation_temperature,
+                    engagement: report.engagement_score,
+                    progression: report.progression_score,
+                    summary: report.conversation_summary,
+                    topics: report.topic_suggestions,
+                    messages: report.next_message_suggestions
+                });
+                
+                // Scores
+                document.getElementById('report-temperature').textContent = 
+                    formatTemperature(report.conversation_temperature);
+                document.getElementById('report-engagement').textContent = 
+                    `${report.engagement_score?.toFixed(1) || '-'}/10`;
+                document.getElementById('report-progression').textContent = 
+                    `${report.progression_score?.toFixed(1) || '-'}/10`;
+                
+                // Summary
+                document.getElementById('report-summary').textContent = 
+                    report.conversation_summary || 'Nenhum resumo disponível';
+                
+                // Topics
+                const topicsEl = document.getElementById('report-topics');
+                if (report.topic_suggestions && report.topic_suggestions.length > 0) {
+                    topicsEl.innerHTML = report.topic_suggestions.map(t => `
+                        <div class="mb-3 p-2 border rounded">
+                            <strong>${t.topic}</strong>
+                            <p class="text-muted small mb-1">${t.reason}</p>
+                            <p class="mb-0 small"><em>"${t.example}"</em></p>
+                        </div>
+                    `).join('');
+                } else {
+                    topicsEl.innerHTML = '<p class="text-muted">Nenhuma sugestão</p>';
+                }
+                
+                // Messages
+                const messagesEl = document.getElementById('report-messages');
+                if (report.next_message_suggestions && report.next_message_suggestions.length > 0) {
+                    messagesEl.innerHTML = report.next_message_suggestions.map(m => 
+                        `<div class="badge bg-primary mb-2 text-start" style="white-space: normal; display: block;">${m}</div>`
+                    ).join('');
+                } else {
+                    messagesEl.innerHTML = '<p class="text-muted">Nenhuma sugestão</p>';
+                }
+                
+                // Mostrar conteúdo
+                document.getElementById('report-loading').style.display = 'none';
+                document.getElementById('report-content').style.display = 'block';
+                
+                console.log('✅ Relatório exibido com sucesso');
+            } else {
+                // Não há relatório, mostrar apenas o botão
+                console.log('Nenhum relatório encontrado para este match');
+                document.getElementById('report-loading').style.display = 'none';
+                document.getElementById('report-content').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar relatório:', error);
+            document.getElementById('report-loading').style.display = 'none';
+            document.getElementById('report-content').style.display = 'none';
+        }
+    }
+    
+    function formatGender(gender) {
+        const map = { 'male': 'Masculino', 'female': 'Feminino', 'non-binary': 'Não-binário' };
+        return map[gender] || gender || '-';
+    }
+    
+    function formatIntent(intent) {
+        const map = { 'relationship': 'Relacionamento sério', 'casual': 'Algo casual', 'friendship': 'Amizade' };
+        return map[intent] || intent || '-';
+    }
+    
+    function formatTemperature(temp) {
+        const map = { 'hot': '🔥 Quente', 'warm': '😊 Morna', 'cold': '❄️ Fria' };
+        return map[temp] || '-';
+    }
+    
+    function displayCurrentPhoto() {
+        if (currentPhotos.length === 0) {
+            document.getElementById('profile-photos').innerHTML = '<p class="text-muted small">Sem fotos</p>';
+            return;
+        }
+        
+        const photo = currentPhotos[currentPhotoIndex];
+        console.log('Displaying photo:', photo);
+        document.getElementById('profile-photos').innerHTML = 
+            `<img src="${photo.url}" class="img-fluid rounded" style="width: 100%; max-height: 400px; object-fit: contain;">`;
+        
+        // Update button states
+        document.getElementById('photo-prev').disabled = currentPhotoIndex === 0;
+        document.getElementById('photo-next').disabled = currentPhotoIndex === currentPhotos.length - 1;
+    }
+    
+    function navigatePhotos(direction) {
+        currentPhotoIndex += direction;
+        if (currentPhotoIndex < 0) currentPhotoIndex = 0;
+        if (currentPhotoIndex >= currentPhotos.length) currentPhotoIndex = currentPhotos.length - 1;
+        displayCurrentPhoto();
+    }
+    
+    function showPhoto(url) {
+        const photoImg = document.getElementById('photoModalImg');
+        photoImg.src = url;
+        const photoModal = new bootstrap.Modal(document.getElementById('photoModal'));
+        photoModal.show();
+        
+        // Fechar ao clicar na imagem
+        photoImg.onclick = function() {
+            photoModal.hide();
+        };
+    }
+    
+    async function toggleMatchStatus(statusType) {
+        if (!currentMatchId) return;
+        
+        const toggleId = statusType === 'resend' ? 'modalResendToggle'
+                       : statusType === 'whatsapp' ? 'modalWhatsappToggle' 
+                       : statusType === 'date' ? 'modalDateToggle' 
+                       : 'modalBlockToggle';
+        const isChecked = document.getElementById(toggleId).checked;
+        
+        try {
+            const response = await fetch(`/api/matches/${currentMatchId}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    status_type: statusType,
+                    value: isChecked
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Atualizar badge de status no modal
+                const statusEl = document.getElementById('modalStatus');
+                const resend = document.getElementById('modalResendToggle').checked;
+                const whatsapp = document.getElementById('modalWhatsappToggle').checked;
+                const date = document.getElementById('modalDateToggle').checked;
+                const blocked = document.getElementById('modalBlockToggle').checked;
+                
+                if (resend) {
+                    statusEl.className = 'badge bg-warning';
+                    statusEl.textContent = 'Reenvio Pendente';
+                } else if (whatsapp) {
+                    statusEl.className = 'badge bg-success';
+                    statusEl.textContent = 'WhatsApp Obtido';
+                } else if (date) {
+                    statusEl.className = 'badge bg-info';
+                    statusEl.textContent = 'Encontro Marcado';
+                } else if (blocked) {
+                    statusEl.className = 'badge bg-danger';
+                    statusEl.textContent = 'Bloqueado';
+                } else {
+                    statusEl.className = 'badge bg-primary';
+                    statusEl.textContent = 'Ativo';
+                }
+                
+                // Recarregar lista
+                loadMatches();
+            } else {
+                customAlert({ title: 'Erro', message: 'Erro ao atualizar status: ' + result.error, type: 'danger' });
+                // Reverter toggle
+                document.getElementById(toggleId).checked = !isChecked;
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar status:', error);
+            document.getElementById(toggleId).checked = !isChecked;
+        }
+    }
+    
+
+</script>
+{% endblock %}

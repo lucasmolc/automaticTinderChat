@@ -1,0 +1,79 @@
+## Tarefa
+Analise os dados de conversas e gere insights acionáveis para melhorar a taxa de sucesso.
+
+## Dados para Análise
+{analytics_data}
+
+## Métricas Disponíveis
+- Total de matches
+- Taxa de resposta às primeiras mensagens
+- Tempo médio até primeira resposta
+- Taxa de conversão para WhatsApp
+- Taxa de conversão para encontros
+- Tipos de mensagens mais eficazes
+- Horários com maior taxa de resposta
+
+## Análise Necessária
+
+### 1. Performance Geral
+- Como está a taxa de resposta?
+- Qual o padrão de engajamento?
+
+### 2. Análise de Mensagens
+- Quais tipos de primeira mensagem funcionam melhor?
+- Quais abordagens têm mais sucesso?
+
+### 3. Gargalos Identificados
+- Onde estão as maiores perdas?
+- O que pode ser melhorado?
+
+### 4. Recomendações
+- Sugestões para o perfil
+- Sugestões para a bio
+- Sugestões de abordagem
+- Melhores horários para usar o app
+
+## Formato de Resposta (JSON)
+{{
+    "overall_performance": {{
+        "score": <0-10>,
+        "summary": "<resumo da performance>"
+    }},
+    "response_rate_analysis": {{
+        "current_rate": "<percentual>",
+        "benchmark": "<comparação com média>",
+        "trend": "<improving/stable/declining>"
+    }},
+    "message_effectiveness": {{
+        "best_performing_type": "<tipo>",
+        "worst_performing_type": "<tipo>",
+        "recommendations": ["<rec1>", "<rec2>"]
+    }},
+    "bottlenecks": [
+        {{
+            "area": "<área do problema>",
+            "description": "<descrição>",
+            "impact": "<alto/médio/baixo>",
+            "solution": "<solução sugerida>"
+        }}
+    ],
+    "profile_improvements": [
+        {{
+            "area": "<bio/fotos/info>",
+            "current_issue": "<problema atual>",
+            "suggestion": "<sugestão>"
+        }}
+    ],
+    "timing_insights": {{
+        "best_hours": ["<hora1>", "<hora2>"],
+        "best_days": ["<dia1>", "<dia2>"],
+        "avoid_times": ["<horário a evitar>"]
+    }},
+    "action_items": [
+        {{
+            "priority": <1-5>,
+            "action": "<ação>",
+            "expected_impact": "<impacto esperado>"
+        }}
+    ]
+}}

@@ -1,0 +1,13 @@
+{
+  "active_provider": "claude",
+  "providers": {
+    "openai": {
+      "enabled": true,
+      "model": "gpt-4o"
+    },
+    "claude": {
+      "enabled": true,
+      "model": "claude-sonnet-4-20250514"
+    }
+  }
+}

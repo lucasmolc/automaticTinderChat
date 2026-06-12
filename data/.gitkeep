@@ -1,0 +1,2 @@
+# Esta pasta guarda dados de runtime (estado da automação, experimentos A/B,
+# banco SQLite padrão). O conteúdo é ignorado pelo git — veja .gitignore.

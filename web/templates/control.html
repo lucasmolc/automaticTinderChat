@@ -1,0 +1,1948 @@
+{% extends "base.html" %}
+
+{% block title %}Controle{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-gear-fill me-2"></i>Painel de Controle</h1>
+        <p class="text-muted mb-0">Controle a automação do Tinder</p>
+    </div>
+    <div>
+        <span id="status-badge" class="badge bg-secondary">
+            <i class="bi bi-circle-fill me-1"></i>Parado
+        </span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- LINHA 1: (Ações + Último Resultado) | Estatísticas | Perfil -->
+    <div class="col-12 col-lg-4">
+        <!-- Sub-linha: Ações em cima, Último Resultado embaixo -->
+        <div class="d-flex flex-column gap-4 h-100">
+            <!-- Card: Controles Principais -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-lightning-fill me-2 text-warning"></i>Ações</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success d-flex align-items-center justify-content-center gap-2" 
+                                id="btn-run-automation" onclick="showAutomationModal()">
+                            <i class="bi bi-play-fill"></i>
+                            <span>Iniciar Automação</span>
+                        </button>
+                        <button class="btn btn-danger align-items-center justify-content-center gap-2" 
+                                id="btn-stop-automation" onclick="stopAutomation()" style="display: none;">
+                            <i class="bi bi-stop-fill"></i>
+                            <span>Parar Automação</span>
+                        </button>
+                        <button class="btn btn-outline-danger align-items-center justify-content-center gap-2" 
+                                id="btn-force-stop" onclick="forceStopAutomation()" style="display: none;">
+                            <i class="bi bi-x-octagon-fill"></i>
+                            <span>Forçar Parada</span>
+                        </button>
+                        
+                        <button class="btn btn-primary d-flex align-items-center justify-content-center gap-2" 
+                                id="btn-sync" onclick="showSyncModal()">
+                            <i class="bi bi-arrow-repeat"></i>
+                            <span>Sincronizar Matches</span>
+                        </button>
+                    </div>
+                    
+                    <div id="automation-info" class="mt-3" style="display: none;">
+                        <div class="alert alert-warning mb-0 py-2">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                <div>
+                                    <strong>Em execução</strong>
+                                    <div class="small" id="automation-cycle-info"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0 py-2" id="automation-tip">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>Os processos abrem o navegador automatizado.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card: Último Resultado -->
+            <div class="card flex-grow-1">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Último Resultado</h6>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div id="last-result" class="text-center">
+                        <span class="text-muted">Nenhuma execução ainda</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-5">
+        <!-- Card: Estatísticas -->
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-bar-chart me-2 text-primary"></i>Estatísticas</h6>
+            </div>
+            <div class="card-body">
+                <div id="stats-content">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <span class="ms-2">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-3">
+        <!-- Card: Meu Perfil com Carrossel -->
+        <div class="card profile-card-main h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-person-circle me-2"></i>Meu Perfil</h6>
+                <button class="btn btn-sm btn-outline-secondary" onclick="loadProfile()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div id="profile-content">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted mb-0">Carregando perfil...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LINHA 2: Consumo de IA -->
+    <div class="col-12">
+        <!-- Card: Consumo de IA -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-graph-up me-2 text-success"></i>Consumo de IA</h6>
+                <button class="btn btn-sm btn-outline-secondary" onclick="loadAIUsage()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="ai-usage-content">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <span class="ms-2">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LINHA 3: Provedores de IA -->
+    <div class="col-12">
+        <!-- Card: Provedores de IA -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-cpu me-2 text-info"></i>Provedores de IA</h6>
+                <button class="btn btn-sm btn-outline-info" onclick="loadAIProviders()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="ai-providers-container">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <span class="ms-2">Carregando...</span>
+                    </div>
+                </div>
+                
+                <div class="mt-3 pt-3 border-top">
+                    <button class="btn btn-outline-primary btn-sm" onclick="testAIConnection()">
+                        <i class="bi bi-plug me-1"></i>Testar Conexão
+                    </button>
+                    <span id="ai-test-result" class="ms-2 small"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Configurar Provider -->
+<div class="modal fade" id="configureProviderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Configurar Provedor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="configureProviderForm">
+                    <input type="hidden" id="configProviderId">
+                    <div class="mb-3">
+                        <label class="form-label">Provedor</label>
+                        <input type="text" class="form-control bg-dark text-white" id="configProviderName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">API Key</label>
+                        <input type="password" class="form-control bg-dark text-white" id="configApiKey" 
+                               placeholder="Insira sua API key">
+                        <div class="form-text">A chave será salva apenas em memória durante esta sessão.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modelo</label>
+                        <select class="form-select bg-dark text-white" id="configModel"></select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveProviderConfig()">
+                    <i class="bi bi-check-lg me-1"></i>Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Iniciar Automação -->
+<div class="modal fade" id="automationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-play-fill me-2 text-success"></i>Iniciar Automação</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Configure as opções de execução da automação:</p>
+                
+                <!-- Modo de Execução -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold"><i class="bi bi-gear me-2"></i>Modo de Execução</label>
+                    <div class="d-grid gap-2">
+                        <div class="form-check card bg-darker p-3 m-0">
+                            <input class="form-check-input" type="radio" name="automationMode" id="modeNormal" value="normal" checked>
+                            <label class="form-check-label w-100 ms-2" for="modeNormal">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong class="text-success"><i class="bi bi-check-circle me-1"></i>Normal</strong>
+                                        <p class="text-muted mb-0 small">Envia mensagens reais para os matches.</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="form-check card bg-darker p-3 m-0">
+                            <input class="form-check-input" type="radio" name="automationMode" id="modeDryRun" value="dry_run">
+                            <label class="form-check-label w-100 ms-2" for="modeDryRun">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong class="text-warning"><i class="bi bi-eye me-1"></i>Dry Run (Simulação)</strong>
+                                        <p class="text-muted mb-0 small">Simula a execução sem enviar mensagens reais. Útil para testar.</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Intervalo -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold" for="automationInterval">
+                        <i class="bi bi-clock me-2"></i>Intervalo entre ciclos
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="form-control bg-dark text-white" id="automationInterval" 
+                               value="10" min="1" max="60">
+                        <span class="input-group-text bg-dark text-white border-secondary">minutos</span>
+                    </div>
+                    <div class="form-text">Tempo de espera entre cada ciclo de verificação (1-60 min).</div>
+                </div>
+                
+                <div class="alert alert-info py-2 mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>O navegador será aberto automaticamente. Você pode parar a qualquer momento pelo botão "Parar".</small>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="startAutomation()">
+                    <i class="bi bi-play-fill me-1"></i>Iniciar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Sincronizar Matches -->
+<div class="modal fade" id="syncModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-arrow-repeat me-2 text-primary"></i>Sincronizar Matches</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Configure as opções de sincronização:</p>
+                
+                <!-- Modo de Sincronização -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold"><i class="bi bi-gear me-2"></i>Modo de Sincronização</label>
+                    <div class="d-grid gap-2">
+                        <div class="form-check card bg-darker p-3 m-0">
+                            <input class="form-check-input" type="radio" name="syncMode" id="syncNormal" value="normal" checked>
+                            <label class="form-check-label w-100 ms-2" for="syncNormal">
+                                <div>
+                                    <strong class="text-primary"><i class="bi bi-arrow-repeat me-1"></i>Sincronização Normal</strong>
+                                    <p class="text-muted mb-0 small">Sincroniza novos matches e atualiza mensagens. Não sobrescreve dados já extraídos.</p>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="form-check card bg-darker p-3 m-0">
+                            <input class="form-check-input" type="radio" name="syncMode" id="syncForceUpdate" value="force_update">
+                            <label class="form-check-label w-100 ms-2" for="syncForceUpdate">
+                                <div>
+                                    <strong class="text-warning"><i class="bi bi-arrow-clockwise me-1"></i>Force Update (Re-extrair dados)</strong>
+                                    <p class="text-muted mb-0 small">Re-extrai bio, cidade, gênero e outros dados mesmo se já existirem. Útil para corrigir dados errados.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opções adicionais -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-sliders me-2"></i>Opções Adicionais</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="syncExtractProfiles" checked>
+                        <label class="form-check-label" for="syncExtractProfiles">
+                            Extrair perfis completos (fotos, bio, interesses)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="syncMessages" checked>
+                        <label class="form-check-label" for="syncMessages">
+                            Sincronizar mensagens das conversas
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info py-2 mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>A sincronização pode levar alguns minutos dependendo da quantidade de matches.</small>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="startSync()">
+                    <i class="bi bi-arrow-repeat me-1"></i>Sincronizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Profile Card - Estilo Tinder */
+.profile-card-main {
+    overflow: hidden;
+    max-width: 380px;
+}
+
+/* Photo Carousel - Proporção 3:4 como no Tinder */
+.profile-carousel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/4;
+    max-height: 450px;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d3d 100%);
+    overflow: hidden;
+}
+
+.profile-carousel .carousel-inner {
+    height: 100%;
+}
+
+.profile-carousel .carousel-item {
+    height: 100%;
+}
+
+.profile-carousel .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-carousel .carousel-control-prev,
+.profile-carousel .carousel-control-next {
+    width: 20%;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.profile-carousel:hover .carousel-control-prev,
+.profile-carousel:hover .carousel-control-next {
+    opacity: 0.9;
+}
+
+.profile-carousel .carousel-indicators {
+    margin-bottom: 0;
+    padding: 8px 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.5));
+}
+
+.profile-carousel .carousel-indicators button {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin: 0 3px;
+    background-color: rgba(255,255,255,0.5);
+}
+
+.profile-carousel .carousel-indicators button.active {
+    background-color: #fff;
+}
+
+/* Spin Animation */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Modal Cards - Background mais escuro */
+.bg-darker {
+    background-color: #1a1a2e !important;
+    border: 1px solid #313244 !important;
+}
+
+.bg-darker:has(input:checked) {
+    border-color: var(--bs-primary) !important;
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+/* Photo Counter Badge */
+.photo-counter {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    z-index: 10;
+}
+
+/* No Photo Placeholder */
+.no-photo-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 3/4;
+    max-height: 450px;
+    color: #6c757d;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d3d 100%);
+}
+
+.no-photo-placeholder i {
+    font-size: 4rem;
+    opacity: 0.3;
+}
+
+/* Profile Info - Overlay no fundo da foto como Tinder */
+.profile-info {
+    padding: 1rem;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: #fff;
+}
+
+.profile-info-standalone {
+    padding: 1rem;
+    position: relative;
+    background: transparent;
+}
+
+.profile-name-age {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.profile-location {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.8);
+}
+
+.profile-bio {
+    font-size: 0.85rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+    white-space: pre-wrap;
+}
+
+.profile-details {
+    margin-top: 0.5rem;
+}
+
+.profile-detail-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+    margin-right: 0.75rem;
+}
+
+.profile-detail-item i {
+    color: rgba(255,255,255,0.5);
+}
+
+.profile-interests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+}
+
+.profile-interest-tag {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+}
+
+/* Stats Items */
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #313244;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+/* AI Provider Cards */
+.ai-provider-card {
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.ai-provider-card.active {
+    border-color: #198754;
+    background: rgba(25, 135, 84, 0.1);
+}
+
+.ai-provider-card.disabled {
+    opacity: 0.6;
+}
+
+.ai-provider-card .provider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.ai-provider-card .provider-name {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.ai-provider-card .provider-model {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.ai-provider-card .provider-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+/* AI Cost Cards */
+.ai-cost-card {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.ai-cost-card:hover {
+    border-color: #198754;
+    background: rgba(25, 135, 84, 0.1);
+}
+
+/* Popup de detalhes de custo */
+.cost-detail-popup {
+    position: absolute;
+    left: 0;
+    bottom: 105%;
+    width: 100%;
+    background: linear-gradient(145deg, #1e1e2e 0%, #181825 100%);
+    border: 1px solid #45475a;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+
+.cost-detail-popup::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: #45475a;
+}
+
+.cost-detail-popup .popup-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #313244;
+}
+
+.cost-detail-popup .popup-header i {
+    font-size: 1.25rem;
+}
+
+.cost-detail-popup .popup-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #cdd6f4;
+}
+
+.cost-detail-popup .cost-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+}
+
+.cost-detail-popup .cost-item:not(:last-child) {
+    border-bottom: 1px dashed #313244;
+}
+
+.cost-detail-popup .cost-item .label {
+    color: #a6adc8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cost-detail-popup .cost-item .label i {
+    width: 16px;
+    text-align: center;
+}
+
+.cost-detail-popup .cost-item .value {
+    font-weight: 600;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.9rem;
+}
+
+.cost-detail-popup .no-data {
+    color: #6c7086;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 0.75rem 0;
+}
+
+/* Animação */
+.ai-cost-card .cost-detail-popup {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.ai-cost-card:hover .cost-detail-popup {
+    opacity: 1;
+    visibility: visible;
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let statusInterval = null;
+let isAutomationRunning = false;
+
+// Carregar dados ao iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    // Garantir estado inicial dos botões (ocultar parar)
+    document.getElementById('btn-stop-automation').style.display = 'none';
+    document.getElementById('btn-force-stop').style.display = 'none';
+    document.getElementById('btn-run-automation').style.display = 'flex';
+    
+    loadProfile();
+    loadStats();
+    loadStatus();
+    loadAIProviders();
+    loadAIUsage();
+    
+    // Atualizar status a cada 15 segundos (reduzido para melhor performance)
+    // Se automação estiver rodando, atualiza mais frequentemente
+    startStatusPolling();
+});
+
+// Gerenciar polling de status dinamicamente
+function startStatusPolling() {
+    if (statusInterval) {
+        clearInterval(statusInterval);
+    }
+    // Intervalo dinâmico: 5s se rodando, 15s se parado
+    const interval = isAutomationRunning ? 5000 : 15000;
+    statusInterval = setInterval(loadStatus, interval);
+}
+
+// Carregar status da automação
+async function loadStatus() {
+    try {
+        const response = await fetch('/api/automation/full-status');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Verificar se estado mudou para ajustar polling
+            const wasRunning = isAutomationRunning;
+            isAutomationRunning = data.data.is_running || data.data.is_syncing;
+            
+            if (wasRunning !== isAutomationRunning) {
+                startStatusPolling(); // Ajustar intervalo
+            }
+            
+            updateStatusBadge(data.data);
+            updateButtons(data.data);
+            updateLastResult(data.data);
+            updateAutomationInfo(data.data);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar status:', error);
+    }
+}
+
+// Atualizar informações de execução
+function updateAutomationInfo(status) {
+    const infoDiv = document.getElementById('automation-info');
+    const cycleInfo = document.getElementById('automation-cycle-info');
+    const tipDiv = document.getElementById('automation-tip');
+    
+    if (status.is_running) {
+        infoDiv.style.display = 'block';
+        tipDiv.style.display = 'none';
+        
+        // Mostrar modo DRY RUN em destaque
+        let info = '';
+        if (status.dry_run) {
+            info = '<span class="badge bg-warning text-dark me-2">DRY RUN</span>';
+        }
+        
+        info += `Ciclo atual: ${status.current_cycle || 0}`;
+        if (status.total_messages_sent > 0) {
+            info += ` | Mensagens: ${status.total_messages_sent}`;
+        }
+        if (status.interval_minutes) {
+            info += ` | Intervalo: ${status.interval_minutes}min`;
+        }
+        if (status.started_at) {
+            const started = new Date(status.started_at);
+            const now = new Date();
+            const diffMs = now - started;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours > 0) {
+                info += ` | Tempo: ${diffHours}h${diffMins % 60}m`;
+            } else {
+                info += ` | Tempo: ${diffMins}min`;
+            }
+        }
+        if (status.should_stop) {
+            info += ' | <span class="text-danger fw-bold">Parando...</span>';
+        }
+        if (status.pid) {
+            info += ` | <small class="text-muted">PID: ${status.pid}</small>`;
+        }
+        cycleInfo.innerHTML = info;
+    } else if (status.is_syncing) {
+        infoDiv.style.display = 'block';
+        tipDiv.style.display = 'none';
+        cycleInfo.innerHTML = '<span class="text-info">Sincronizando dados...</span>';
+    } else {
+        infoDiv.style.display = 'none';
+        tipDiv.style.display = 'block';
+    }
+}
+
+// Carregar estatísticas
+async function loadStats() {
+    const container = document.getElementById('stats-content');
+    
+    try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            const stats = data.data;
+            container.innerHTML = `
+                <div class="stat-item">
+                    <span class="profile-label">Total de Matches</span>
+                    <span class="fw-bold">${stats.total_matches || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="profile-label">Bloqueados</span>
+                    <span class="text-danger">${stats.blocked_matches || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="profile-label">Matches Novos</span>
+                    <span class="text-success">${stats.new_matches || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="profile-label">Aguardando Resposta</span>
+                    <span class="text-warning">${stats.awaiting_response || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="profile-label">WhatsApp Obtidos</span>
+                    <span class="text-info">${stats.whatsapp_obtained || 0}</span>
+                </div>
+            `;
+        } else {
+            container.innerHTML = '<span class="text-danger">Erro ao carregar estatísticas</span>';
+        }
+    } catch (error) {
+        container.innerHTML = '<span class="text-danger">Erro ao carregar estatísticas</span>';
+    }
+}
+
+// Atualizar badge de status
+function updateStatusBadge(status) {
+    const badge = document.getElementById('status-badge');
+    
+    if (status.is_running) {
+        if (status.dry_run) {
+            badge.className = 'badge bg-warning text-dark';
+            badge.innerHTML = '<i class="bi bi-circle-fill me-1"></i>DRY RUN';
+        } else {
+            badge.className = 'badge bg-success';
+            badge.innerHTML = '<i class="bi bi-circle-fill me-1"></i>Executando';
+        }
+    } else if (status.is_syncing) {
+        badge.className = 'badge bg-primary';
+        badge.innerHTML = '<i class="bi bi-circle-fill me-1"></i>Sincronizando';
+    } else {
+        badge.className = 'badge bg-secondary';
+        badge.innerHTML = '<i class="bi bi-circle-fill me-1"></i>Parado';
+    }
+}
+
+// Atualizar estado dos botões
+function updateButtons(status) {
+    const btnRun = document.getElementById('btn-run-automation');
+    const btnStop = document.getElementById('btn-stop-automation');
+    const btnForceStop = document.getElementById('btn-force-stop');
+    const btnSync = document.getElementById('btn-sync');
+    
+    if (status.is_running) {
+        btnRun.style.display = 'none';
+        btnStop.style.display = 'flex';
+        btnSync.disabled = true;
+        btnSync.innerHTML = '<i class="bi bi-arrow-repeat"></i><span>Sincronizar Matches</span>';
+        
+        // Se já solicitou parada, mostrar botão de force stop
+        if (status.should_stop) {
+            btnStop.disabled = true;
+            btnStop.innerHTML = '<i class="bi bi-hourglass-split me-2"></i><span>Parando...</span>';
+            btnForceStop.style.display = 'flex';
+        } else {
+            btnStop.disabled = false;
+            btnStop.innerHTML = '<i class="bi bi-stop-fill"></i><span>Parar Automação</span>';
+            btnForceStop.style.display = 'none';
+        }
+    } else if (status.is_syncing) {
+        btnRun.disabled = true;
+        btnRun.style.display = 'flex';
+        btnStop.style.display = 'none';
+        btnForceStop.style.display = 'none';
+        btnSync.disabled = true;
+        btnSync.innerHTML = '<i class="bi bi-arrow-repeat spin"></i><span class="ms-2">Sincronizando...</span>';
+    } else {
+        btnRun.disabled = false;
+        btnRun.style.display = 'flex';
+        btnStop.style.display = 'none';
+        btnForceStop.style.display = 'none';
+        btnSync.disabled = false;
+        btnSync.innerHTML = '<i class="bi bi-arrow-repeat"></i><span>Sincronizar Matches</span>';
+    }
+}
+
+// Atualizar último resultado
+function updateLastResult(status) {
+    const container = document.getElementById('last-result');
+    let result = status.last_result || status.last_sync_result;
+    
+    if (!result) {
+        container.innerHTML = '<span class="text-muted">Nenhuma execução ainda</span>';
+        return;
+    }
+    
+    if (result.success) {
+        let html = '<div class="alert alert-success mb-0 py-2">';
+        html += '<i class="bi bi-check-circle me-2"></i><strong>Sucesso!</strong><br>';
+        
+        if (result.messages_sent !== undefined) {
+            html += `Mensagens enviadas: ${result.messages_sent}<br>`;
+        }
+        if (result.total_matches !== undefined) {
+            html += `Total de matches: ${result.total_matches}`;
+            if (result.new_matches !== undefined) {
+                html += ` (${result.new_matches} novos)`;
+            }
+        }
+        if (result.messages_synced !== undefined) {
+            html += `<br>Mensagens sincronizadas: ${result.messages_synced}`;
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    } else {
+        container.innerHTML = `<div class="alert alert-danger mb-0 py-2">
+            <i class="bi bi-x-circle me-2"></i><strong>Erro:</strong> ${result.error || 'Desconhecido'}
+        </div>`;
+    }
+}
+
+// Carregar perfil com carrossel de fotos
+async function loadProfile() {
+    const container = document.getElementById('profile-content');
+    
+    try {
+        const response = await fetch('/api/profile');
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            const profile = data.data;
+            const photos = profile.photos || [];
+            const interests = profile.interests || [];
+            
+            let photosHtml = '';
+            
+            if (photos.length > 0) {
+                // Carrossel de fotos
+                const carouselId = 'profileCarousel';
+                const indicators = photos.map((_, i) => 
+                    `<button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${i}" 
+                            ${i === 0 ? 'class="active" aria-current="true"' : ''} aria-label="Foto ${i+1}"></button>`
+                ).join('');
+                
+                const slides = photos.map((photo, i) => 
+                    `<div class="carousel-item ${i === 0 ? 'active' : ''}">
+                        <img src="${photo.url}" alt="Foto ${i+1}" loading="lazy">
+                    </div>`
+                ).join('');
+                
+                photosHtml = `
+                    <div class="profile-carousel">
+                        <span class="photo-counter"><i class="bi bi-images me-1"></i>${photos.length}</span>
+                        <div id="${carouselId}" class="carousel slide h-100" data-bs-ride="false">
+                            <div class="carousel-indicators">${indicators}</div>
+                            <div class="carousel-inner">${slides}</div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                photosHtml = `
+                    <div class="no-photo-placeholder">
+                        <i class="bi bi-person-bounding-box"></i>
+                        <span class="mt-2">Sem fotos</span>
+                        <small class="text-muted">Sincronize para carregar</small>
+                    </div>
+                `;
+            }
+            
+            // Interesses
+            let interestsHtml = '';
+            if (interests.length > 0) {
+                interestsHtml = `
+                    <div class="profile-interests">
+                        ${interests.slice(0, 6).map(i => `<span class="profile-interest-tag">${i}</span>`).join('')}
+                        ${interests.length > 6 ? `<span class="profile-interest-tag">+${interests.length - 6}</span>` : ''}
+                    </div>
+                `;
+            }
+            
+            // Detalhes adicionais
+            let detailsHtml = '';
+            if (profile.job_title || profile.school || profile.location) {
+                detailsHtml = '<div class="profile-details">';
+                if (profile.job_title) {
+                    detailsHtml += `<div class="profile-detail-item"><i class="bi bi-briefcase"></i>${profile.job_title}${profile.company ? ' @ ' + profile.company : ''}</div>`;
+                }
+                if (profile.school) {
+                    detailsHtml += `<div class="profile-detail-item"><i class="bi bi-mortarboard"></i>${profile.school}</div>`;
+                }
+                if (profile.location) {
+                    detailsHtml += `<div class="profile-detail-item"><i class="bi bi-geo-alt"></i>${profile.location}</div>`;
+                }
+                detailsHtml += '</div>';
+            }
+            
+            container.innerHTML = `
+                ${photosHtml}
+                <div class="profile-info">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="profile-name-age">${profile.name || 'Sem nome'}${profile.age ? ', ' + profile.age : ''}</div>
+                            ${profile.location ? `<div class="profile-location"><i class="bi bi-geo-alt me-1"></i>${profile.location}</div>` : ''}
+                        </div>
+                        ${profile.overall_score ? `<span class="badge bg-success">${profile.overall_score.toFixed(1)}</span>` : ''}
+                    </div>
+                    ${profile.bio ? `<div class="profile-bio">${profile.bio}</div>` : ''}
+                    ${detailsHtml}
+                    ${interestsHtml}
+                    <div class="mt-2 pt-2 border-top text-muted small">
+                        <i class="bi bi-clock me-1"></i>Atualizado: ${profile.updated_at ? new Date(profile.updated_at).toLocaleString('pt-BR') : 'Nunca'}
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="no-photo-placeholder">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <span class="mt-2">Perfil não sincronizado</span>
+                    <small class="text-muted">Execute a sincronização</small>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar perfil:', error);
+        container.innerHTML = '<div class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Erro ao carregar perfil</div>';
+    }
+}
+
+// ============================================================
+// MODAL: AUTOMAÇÃO
+// ============================================================
+
+// Mostrar modal de automação
+function showAutomationModal() {
+    const modal = new bootstrap.Modal(document.getElementById('automationModal'));
+    modal.show();
+}
+
+// Iniciar automação a partir do modal
+async function startAutomation() {
+    // Fechar modal
+    bootstrap.Modal.getInstance(document.getElementById('automationModal')).hide();
+    
+    // Obter opções do modal
+    const mode = document.querySelector('input[name="automationMode"]:checked').value;
+    const interval = parseInt(document.getElementById('automationInterval').value) || 10;
+    const isDryRun = mode === 'dry_run';
+    
+    // Atualizar botões IMEDIATAMENTE para feedback visual
+    const btnRun = document.getElementById('btn-run-automation');
+    const btnStop = document.getElementById('btn-stop-automation');
+    const btnSync = document.getElementById('btn-sync');
+    
+    btnRun.style.display = 'none';
+    btnStop.style.display = 'flex';
+    btnStop.disabled = false;
+    btnSync.disabled = true;
+    
+    const modeText = isDryRun ? ' (Dry Run)' : '';
+    showToast(`Iniciando automação${modeText}...`, 'info');
+    
+    try {
+        const response = await fetch('/api/automation/run', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                interval_minutes: interval,
+                dry_run: isDryRun
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Automação iniciada${modeText}! Use o botão Parar para interromper.`, 'success');
+        } else {
+            showToast('Erro: ' + (data.error || 'Falha ao iniciar'), 'danger');
+            // Reverter botões se falhou
+            btnRun.style.display = 'flex';
+            btnStop.style.display = 'none';
+            btnSync.disabled = false;
+        }
+    } catch (error) {
+        showToast('Erro ao iniciar automação', 'danger');
+        // Reverter botões se falhou
+        btnRun.style.display = 'flex';
+        btnStop.style.display = 'none';
+        btnSync.disabled = false;
+    }
+    
+    // Atualizar status completo
+    setTimeout(loadStatus, 1000);
+}
+
+// Parar automação
+async function stopAutomation() {
+    const confirmed = await customConfirm({
+        title: 'Parar Automação',
+        message: 'O ciclo atual será concluído antes de parar.',
+        type: 'danger',
+        confirmText: 'Parar',
+        cancelText: 'Continuar'
+    });
+    if (!confirmed) return;
+    
+    // Atualizar botão IMEDIATAMENTE para feedback visual
+    const btnStop = document.getElementById('btn-stop-automation');
+    btnStop.disabled = true;
+    btnStop.innerHTML = '<i class="bi bi-hourglass-split me-2"></i><span>Parando...</span>';
+    
+    showToast('Enviando solicitação de parada...', 'warning');
+    
+    try {
+        const response = await fetch('/api/automation/stop', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Solicitação de parada enviada. Aguarde o ciclo atual terminar.', 'info');
+            // Mostrar botão de force stop
+            document.getElementById('btn-force-stop').style.display = 'flex';
+        } else {
+            showToast('Erro: ' + (data.error || 'Falha ao parar'), 'danger');
+            // Reverter botão se falhou
+            btnStop.disabled = false;
+            btnStop.innerHTML = '<i class="bi bi-stop-fill"></i><span>Parar Automação</span>';
+        }
+    } catch (error) {
+        showToast('Erro ao parar automação', 'danger');
+    }
+    
+    // Atualizar status
+    setTimeout(loadStatus, 500);
+}
+
+// Forçar parada da automação (emergência)
+async function forceStopAutomation() {
+    const confirmed = await customConfirm({
+        title: '⚠️ Forçar Parada',
+        message: 'Isso vai RESETAR o estado imediatamente. Use apenas se o botão "Parar" não funcionou após 30 segundos. O navegador pode precisar ser fechado manualmente.',
+        type: 'danger',
+        confirmText: 'Forçar Parada',
+        cancelText: 'Aguardar'
+    });
+    if (!confirmed) return;
+    
+    showToast('Forçando parada...', 'warning');
+    
+    try {
+        const response = await fetch('/api/automation/force-stop', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Estado resetado! Verifique se o navegador foi fechado.', 'warning');
+            if (data.warning) {
+                setTimeout(() => showToast(data.warning, 'info'), 1500);
+            }
+        } else {
+            showToast('Erro: ' + (data.error || 'Falha ao forçar parada'), 'danger');
+        }
+    } catch (error) {
+        showToast('Erro ao forçar parada', 'danger');
+    }
+    
+    // Atualizar status
+    setTimeout(loadStatus, 500);
+}
+
+// ============================================================
+// MODAL: SINCRONIZAÇÃO
+// ============================================================
+
+// Mostrar modal de sincronização
+function showSyncModal() {
+    const modal = new bootstrap.Modal(document.getElementById('syncModal'));
+    modal.show();
+}
+
+// Iniciar sincronização a partir do modal
+async function startSync() {
+    // Fechar modal
+    bootstrap.Modal.getInstance(document.getElementById('syncModal')).hide();
+    
+    // Obter opções do modal
+    const mode = document.querySelector('input[name="syncMode"]:checked').value;
+    const extractProfiles = document.getElementById('syncExtractProfiles').checked;
+    const syncMessages = document.getElementById('syncMessages').checked;
+    const forceUpdate = mode === 'force_update';
+    
+    // Atualizar botões IMEDIATAMENTE para feedback visual
+    const btnRun = document.getElementById('btn-run-automation');
+    const btnSync = document.getElementById('btn-sync');
+    
+    btnRun.disabled = true;
+    btnSync.disabled = true;
+    btnSync.innerHTML = '<i class="bi bi-arrow-repeat spin"></i><span class="ms-2">Sincronizando...</span>';
+    
+    const modeText = forceUpdate ? ' (Force Update)' : '';
+    showToast(`Iniciando sincronização${modeText}...`, 'info');
+    
+    try {
+        const response = await fetch('/api/automation/sync', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                force_update: forceUpdate,
+                extract_profiles: extractProfiles,
+                sync_messages: syncMessages
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Sincronização iniciada${modeText}! Aguarde...`, 'success');
+        } else {
+            showToast('Erro: ' + (data.error || 'Falha ao sincronizar'), 'danger');
+            // Reverter botões se falhou imediatamente
+            btnRun.disabled = false;
+            btnSync.disabled = false;
+            btnSync.innerHTML = '<i class="bi bi-arrow-repeat"></i><span>Sincronizar Matches</span>';
+        }
+    } catch (error) {
+        showToast('Erro ao iniciar sincronização', 'danger');
+        // Reverter botões se falhou
+        btnRun.disabled = false;
+        btnSync.disabled = false;
+        btnSync.innerHTML = '<i class="bi bi-arrow-repeat"></i><span>Sincronizar Matches</span>';
+    }
+    
+    // Atualizar status completo
+    setTimeout(loadStatus, 1000);
+}
+
+// Mostrar toast
+function showToast(message, type = 'info') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast show bg-${type} text-white`;
+    toast.innerHTML = `
+        <div class="toast-body d-flex align-items-center">
+            <span class="me-auto">${message}</span>
+            <button type="button" class="btn-close btn-close-white ms-2" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+// ============================================================
+// AI PROVIDERS MANAGEMENT
+// ============================================================
+
+let aiProvidersData = [];
+let aiCostsData = null;
+
+// ============================================================
+// AI USAGE / CONSUMO
+// ============================================================
+
+async function loadAIUsage() {
+    const container = document.getElementById('ai-usage-content');
+    
+    try {
+        const response = await fetch('/api/ai/costs?days=30');
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            aiCostsData = data.data;
+            renderAIUsage(data.data);
+        } else {
+            // Mostrar versão simplificada se não houver dados
+            container.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-graph-up text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2 mb-0 small">Sem dados de consumo ainda</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar custos:', error);
+        // Fallback simples
+        container.innerHTML = `
+            <div class="text-center py-3">
+                <i class="bi bi-graph-up text-muted" style="font-size: 2rem;"></i>
+                <p class="text-muted mt-2 mb-0 small">Sem dados de consumo ainda</p>
+            </div>
+        `;
+    }
+}
+
+function renderAIUsage(data) {
+    const container = document.getElementById('ai-usage-content');
+    
+    if (!data || !data.by_provider || Object.keys(data.by_provider).length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-3">
+                <i class="bi bi-graph-up text-muted" style="font-size: 2rem;"></i>
+                <p class="text-muted mt-2 mb-0 small">Nenhum consumo registrado</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const totalCost = data.total_cost || 0;
+    const totalTokens = data.total_tokens || 0;
+    
+    let html = `
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <span class="text-muted">Total (${data.period_days || 30} dias)</span>
+            <span class="fs-5 fw-bold text-success">$${totalCost.toFixed(4)}</span>
+        </div>
+    `;
+    
+    // Cards por provedor
+    for (const [providerName, providerData] of Object.entries(data.by_provider)) {
+        const icon = getProviderIcon(providerName);
+        const color = getProviderColor(providerName);
+        const displayName = providerName.charAt(0).toUpperCase() + providerName.slice(1);
+        const cost = providerData.cost || 0;
+        const tokens = providerData.tokens || 0;
+        const requests = providerData.requests || 0;
+        
+        // Gerar HTML do popup de detalhes
+        let popupContent = '';
+        if (providerData.by_type && providerData.by_type.length > 0) {
+            popupContent = providerData.by_type.map(item => {
+                const itemIcon = getInteractionIcon(item.type);
+                const itemCost = (item.cost || 0).toFixed(4);
+                const itemTokens = formatNumber(item.tokens || 0);
+                return `
+                    <div class="cost-item">
+                        <span class="label">
+                            <i class="bi bi-${itemIcon}"></i>
+                            ${item.label}
+                        </span>
+                        <span class="value text-${color}">$${itemCost}</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            popupContent = '<div class="no-data"><i class="bi bi-inbox me-1"></i>Sem detalhamento</div>';
+        }
+        
+        html += `
+            <div class="ai-cost-card mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-${icon} text-${color}"></i>
+                        <div>
+                            <div class="fw-semibold">${displayName}</div>
+                            <small class="text-muted">${formatNumber(requests)} req · ${formatNumber(tokens)} tokens</small>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-${color}">$${cost.toFixed(4)}</div>
+                        <small class="text-muted"><i class="bi bi-info-circle"></i></small>
+                    </div>
+                </div>
+                <div class="cost-detail-popup">
+                    <div class="popup-header">
+                        <i class="bi bi-${icon} text-${color}"></i>
+                        <span class="popup-title">${displayName} - Detalhamento</span>
+                    </div>
+                    ${popupContent}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Gráfico de custos diários
+    if (data.daily_costs && data.daily_costs.length > 0) {
+        html += `
+            <div class="mt-3 pt-2 border-top">
+                <small class="text-muted d-block mb-2">
+                    <i class="bi bi-graph-up me-1"></i>Últimos 7 dias
+                </small>
+                <div class="d-flex align-items-end gap-1" style="height: 40px;">
+                    ${renderMiniBarChart(data.daily_costs)}
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+function renderMiniBarChart(dailyCosts) {
+    const maxCost = Math.max(...dailyCosts.map(d => d.cost), 0.0001);
+    
+    return dailyCosts.map((day, index) => {
+        const height = Math.max(4, (day.cost / maxCost) * 36);
+        const isToday = index === dailyCosts.length - 1;
+        
+        return `
+            <div class="flex-fill text-center" title="${day.date}: $${day.cost.toFixed(4)}">
+                <div style="height: ${height}px; background: ${isToday ? '#198754' : '#6c757d'}; border-radius: 2px;"></div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function showCostDetailsModal() {
+    if (!aiCostsData) {
+        await customAlert('Carregando dados...', 'info');
+        return;
+    }
+    
+    // Criar modal dinâmico
+    let modalHtml = `
+        <div class="modal fade" id="costDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-bar-chart-line me-2"></i>Detalhes de Custos com IA
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        ${renderCostDetailsContent(aiCostsData)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior se existir
+    const existingModal = document.getElementById('costDetailsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Adicionar novo modal
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('costDetailsModal'));
+    modal.show();
+}
+
+function renderCostDetailsContent(data) {
+    let html = '';
+    
+    // Resumo Geral
+    html += `
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card bg-secondary bg-opacity-25">
+                    <div class="card-body text-center">
+                        <div class="text-success fs-3 fw-bold">$${data.total_cost.toFixed(4)}</div>
+                        <small class="text-muted">Custo Total</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-secondary bg-opacity-25">
+                    <div class="card-body text-center">
+                        <div class="text-info fs-3 fw-bold">${formatNumber(data.total_tokens)}</div>
+                        <small class="text-muted">Tokens Usados</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-secondary bg-opacity-25">
+                    <div class="card-body text-center">
+                        <div class="text-warning fs-3 fw-bold">${data.period_days}</div>
+                        <small class="text-muted">Dias</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Tabela detalhada por tipo
+    html += `
+        <h6 class="mb-3"><i class="bi bi-list-ul me-2"></i>Gastos por Tipo de Interação</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th class="text-center">Requisições</th>
+                        <th class="text-end">Tokens</th>
+                        <th class="text-end">Custo</th>
+                        <th class="text-end">Tempo Médio</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    if (data.by_type && data.by_type.length > 0) {
+        data.by_type.forEach(item => {
+            const percentage = data.total_cost > 0 
+                ? ((item.cost / data.total_cost) * 100).toFixed(1) 
+                : 0;
+            
+            html += `
+                <tr>
+                    <td>
+                        ${item.label}
+                        <div class="progress mt-1" style="height: 3px;">
+                            <div class="progress-bar bg-success" style="width: ${percentage}%"></div>
+                        </div>
+                    </td>
+                    <td class="text-center">${formatNumber(item.requests)}</td>
+                    <td class="text-end">${formatNumber(item.tokens)}</td>
+                    <td class="text-end text-success fw-bold">$${item.cost.toFixed(4)}</td>
+                    <td class="text-end text-muted">${item.avg_response_time_ms}ms</td>
+                </tr>
+            `;
+        });
+    } else {
+        html += '<tr><td colspan="5" class="text-center text-muted">Nenhum dado disponível</td></tr>';
+    }
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    // Por provedor
+    if (data.by_provider && Object.keys(data.by_provider).length > 1) {
+        html += '<h6 class="mb-3 mt-4"><i class="bi bi-diagram-3 me-2"></i>Por Provedor</h6>';
+        html += '<div class="row g-3">';
+        
+        for (const [provider, pData] of Object.entries(data.by_provider)) {
+            const icon = getProviderIcon(provider);
+            const color = getProviderColor(provider);
+            
+            html += `
+                <div class="col-md-6">
+                    <div class="card bg-secondary bg-opacity-25">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-${icon} text-${color} fs-4 me-2"></i>
+                                <h6 class="mb-0">${provider.charAt(0).toUpperCase() + provider.slice(1)}</h6>
+                            </div>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="text-${color} fw-bold">$${pData.cost.toFixed(4)}</div>
+                                    <small class="text-muted">Custo</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fw-bold">${formatNumber(pData.tokens)}</div>
+                                    <small class="text-muted">Tokens</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="fw-bold">${formatNumber(pData.requests)}</div>
+                                    <small class="text-muted">Req</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+    }
+    
+    return html;
+}
+
+function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
+
+function getInteractionIcon(type) {
+    const icons = {
+        'first_message': 'chat-heart',
+        'message_generation': 'chat-text',
+        'response': 'reply',
+        'profile_analysis': 'person-badge',
+        'conversation_response': 'chat-left-text',
+        'analytics_insights': 'graph-up',
+        'match_report': 'file-earmark-text',
+        'report': 'file-text',
+        'analysis': 'search',
+        'test': 'bug',
+        'unknown': 'question-circle'
+    };
+    return icons[type] || 'circle';
+}
+
+// Helper functions for provider styling
+function getProviderIcon(providerId) {
+    const icons = {
+        'openai': 'chat-dots-fill',
+        'deepseek': 'braces',
+        'claude': 'robot',
+        'anthropic': 'robot'
+    };
+    return icons[providerId] || 'cpu';
+}
+
+function getProviderColor(providerId) {
+    const colors = {
+        'openai': 'success',
+        'deepseek': 'info',
+        'claude': 'warning',
+        'anthropic': 'warning'
+    };
+    return colors[providerId] || 'secondary';
+}
+
+// ============================================================
+// AI PROVIDERS MANAGEMENT
+// ============================================================
+
+async function loadAIProviders() {
+    const container = document.getElementById('ai-providers-container');
+    
+    try {
+        const response = await fetch('/api/ai/providers');
+        const data = await response.json();
+        
+        if (data.success) {
+            aiProvidersData = data.providers;
+            renderAIProviders(data.providers, data.active_provider);
+        } else {
+            container.innerHTML = `<div class="alert alert-danger mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>Erro ao carregar provedores: ${data.error}
+            </div>`;
+        }
+    } catch (error) {
+        container.innerHTML = `<div class="alert alert-danger mb-0">
+            <i class="bi bi-exclamation-triangle me-2"></i>Erro de conexão
+        </div>`;
+    }
+}
+
+function renderAIProviders(providers, activeProvider) {
+    const container = document.getElementById('ai-providers-container');
+    
+    if (!providers || providers.length === 0) {
+        container.innerHTML = '<p class="text-muted">Nenhum provedor configurado</p>';
+        return;
+    }
+    
+    let html = '<div class="row">';
+    
+    providers.forEach(provider => {
+        const isActive = provider.provider_id === activeProvider;
+        const isEnabled = provider.is_enabled;
+        const isConfigured = provider.status !== 'not_configured';
+        
+        let statusBadge = '';
+        let statusClass = '';
+        
+        switch(provider.status) {
+            case 'enabled':
+                statusBadge = '<span class="badge bg-success">Habilitado</span>';
+                break;
+            case 'disabled':
+                statusBadge = '<span class="badge bg-secondary">Desabilitado</span>';
+                statusClass = 'disabled';
+                break;
+            case 'error':
+                statusBadge = '<span class="badge bg-danger">Erro</span>';
+                statusClass = 'disabled';
+                break;
+            case 'rate_limited':
+                statusBadge = '<span class="badge bg-warning">Rate Limited</span>';
+                break;
+            case 'budget_exceeded':
+                statusBadge = '<span class="badge bg-danger">Budget Excedido</span>';
+                statusClass = 'disabled';
+                break;
+            case 'not_configured':
+                statusBadge = '<span class="badge bg-dark">Não configurado</span>';
+                statusClass = 'disabled';
+                break;
+        }
+        
+        if (isActive) {
+            statusBadge += ' <span class="badge bg-primary ms-1">Ativo</span>';
+        }
+        
+        html += `
+        <div class="col-md-6">
+            <div class="ai-provider-card ${isActive ? 'active' : ''} ${statusClass}">
+                <div class="provider-header">
+                    <span class="provider-name">
+                        <i class="bi bi-${getProviderIcon(provider.provider_id)} me-2 text-${getProviderColor(provider.provider_id)}"></i>
+                        ${provider.provider_name}
+                    </span>
+                    <span class="provider-status">${statusBadge}</span>
+                </div>
+                
+                <div class="provider-model">
+                    ${provider.current_model ? `Modelo: <strong>${provider.current_model}</strong>` : 'Modelo não selecionado'}
+                </div>
+                
+                ${provider.last_error ? `<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>${provider.last_error}</div>` : ''}
+                
+                <div class="provider-actions">
+                    ${isConfigured ? `
+                        ${isEnabled ? `
+                            <button class="btn btn-sm btn-outline-secondary" onclick="disableProvider('${provider.provider_id}')">
+                                <i class="bi bi-pause"></i> Desabilitar
+                            </button>
+                        ` : `
+                            <button class="btn btn-sm btn-outline-success" onclick="enableProvider('${provider.provider_id}')">
+                                <i class="bi bi-play"></i> Habilitar
+                            </button>
+                        `}
+                        ${!isActive && isEnabled ? `
+                            <button class="btn btn-sm btn-primary" onclick="activateProvider('${provider.provider_id}')">
+                                <i class="bi bi-check-lg"></i> Ativar
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-outline-info" onclick="openChangeModelModal('${provider.provider_id}')">
+                            <i class="bi bi-gear"></i> Modelo
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-primary" onclick="openConfigureModal('${provider.provider_id}')">
+                            <i class="bi bi-plus-lg"></i> Configurar
+                        </button>
+                    `}
+                </div>
+                
+                ${provider.available_models && provider.available_models.length > 0 ? `
+                    <div class="mt-2">
+                        <small class="text-muted">Modelos disponíveis: ${provider.available_models.map(m => m.id).join(', ')}</small>
+                    </div>
+                ` : ''}
+            </div>
+        </div>`;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+async function activateProvider(providerId) {
+    try {
+        const response = await fetch(`/api/ai/providers/${providerId}/activate`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Provedor ${providerId} ativado!`, 'success');
+            loadAIProviders();
+        } else {
+            showToast(`Erro: ${data.error}`, 'danger');
+        }
+    } catch (error) {
+        showToast('Erro ao ativar provedor', 'danger');
+    }
+}
+
+async function enableProvider(providerId) {
+    try {
+        const response = await fetch(`/api/ai/providers/${providerId}/enable`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Provedor ${providerId} habilitado!`, 'success');
+            loadAIProviders();
+        } else {
+            showToast(`Erro: ${data.error}`, 'danger');
+        }
+    } catch (error) {
+        showToast('Erro ao habilitar provedor', 'danger');
+    }
+}
+
+async function disableProvider(providerId) {
+    const confirmed = await customConfirm({
+        title: 'Desabilitar Provedor',
+        message: `Desabilitar o provedor ${providerId}?\n\nSe for o único provedor ativo, as funcionalidades de IA ficarão indisponíveis.`,
+        type: 'warning',
+        confirmText: 'Desabilitar',
+        cancelText: 'Manter Ativo'
+    });
+    if (!confirmed) return;
+    
+    try {
+        const response = await fetch(`/api/ai/providers/${providerId}/disable`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Provedor ${providerId} desabilitado`, 'info');
+            loadAIProviders();
+        } else {
+            showToast(`Erro: ${data.error}`, 'danger');
+        }
+    } catch (error) {
+        showToast('Erro ao desabilitar provedor', 'danger');
+    }
+}
+
+function openConfigureModal(providerId) {
+    const provider = aiProvidersData.find(p => p.provider_id === providerId);
+    if (!provider) return;
+    
+    document.getElementById('configProviderId').value = providerId;
+    document.getElementById('configProviderName').value = provider.provider_name;
+    document.getElementById('configApiKey').value = '';
+    document.getElementById('configApiKey').disabled = false;
+    
+    // Popular modelos
+    const modelSelect = document.getElementById('configModel');
+    modelSelect.innerHTML = provider.available_models.map(m => 
+        `<option value="${m.id}" ${m.id === provider.current_model ? 'selected' : ''}>${m.name} - ${m.description || ''}</option>`
+    ).join('');
+    
+    new bootstrap.Modal(document.getElementById('configureProviderModal')).show();
+}
+
+function openChangeModelModal(providerId) {
+    const provider = aiProvidersData.find(p => p.provider_id === providerId);
+    if (!provider) return;
+    
+    document.getElementById('configProviderId').value = providerId;
+    document.getElementById('configProviderName').value = provider.provider_name;
+    document.getElementById('configApiKey').value = '(manter atual)';
+    document.getElementById('configApiKey').disabled = true;
+    
+    // Popular modelos
+    const modelSelect = document.getElementById('configModel');
+    modelSelect.innerHTML = provider.available_models.map(m => 
+        `<option value="${m.id}" ${m.id === provider.current_model ? 'selected' : ''}>${m.name} - ${m.description || ''}</option>`
+    ).join('');
+    
+    new bootstrap.Modal(document.getElementById('configureProviderModal')).show();
+}
+
+async function saveProviderConfig() {
+    const providerId = document.getElementById('configProviderId').value;
+    const apiKey = document.getElementById('configApiKey').value;
+    const model = document.getElementById('configModel').value;
+    const setActive = true; // Sempre definir como ativo ao salvar
+    
+    // Se está apenas mudando o modelo
+    if (apiKey === '(manter atual)') {
+        try {
+            const response = await fetch(`/api/ai/providers/${providerId}/model`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model_id: model })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(`Modelo alterado para ${model}`, 'success');
+                bootstrap.Modal.getInstance(document.getElementById('configureProviderModal')).hide();
+                document.getElementById('configApiKey').disabled = false;
+                loadAIProviders();
+            } else {
+                showToast(`Erro: ${data.error}`, 'danger');
+            }
+        } catch (error) {
+            showToast('Erro ao alterar modelo', 'danger');
+        }
+        return;
+    }
+    
+    if (!apiKey) {
+        showToast('API Key é obrigatória', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/ai/providers/${providerId}/configure`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                api_key: apiKey, 
+                model: model,
+                set_as_active: setActive
+            })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Provedor ${providerId} configurado com sucesso!`, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('configureProviderModal')).hide();
+            loadAIProviders();
+        } else {
+            showToast(`Erro: ${data.error}`, 'danger');
+        }
+    } catch (error) {
+        showToast('Erro ao configurar provedor', 'danger');
+    }
+}
+
+async function testAIConnection() {
+    const resultSpan = document.getElementById('ai-test-result');
+    resultSpan.innerHTML = '<span class="text-info"><i class="bi bi-hourglass-split me-1"></i>Testando...</span>';
+    
+    try {
+        const response = await fetch('/api/ai/test', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            resultSpan.innerHTML = `<span class="text-success">
+                <i class="bi bi-check-circle me-1"></i>OK! 
+                ${data.provider}/${data.model} - ${data.tokens_used} tokens
+            </span>`;
+        } else {
+            if (data.error_type === 'budget_exceeded') {
+                resultSpan.innerHTML = `<span class="text-danger">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Budget excedido! Verifique seu plano.
+                </span>`;
+            } else {
+                resultSpan.innerHTML = `<span class="text-danger">
+                    <i class="bi bi-x-circle me-1"></i>${data.error}
+                </span>`;
+            }
+        }
+    } catch (error) {
+        resultSpan.innerHTML = `<span class="text-danger">
+            <i class="bi bi-x-circle me-1"></i>Erro de conexão
+        </span>`;
+    }
+}
+</script>
+{% endblock %}

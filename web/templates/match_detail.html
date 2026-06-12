@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Match - {{ match_id }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <a href="/matches" class="btn btn-sm btn-outline-secondary mb-2">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <h1 id="match-name">Carregando...</h1>
+        <p class="text-muted mb-0" id="match-age"></p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="loadMatchData()">
+            <i class="bi bi-arrow-clockwise"></i> Atualizar
+        </button>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4" id="matchTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab">
+            <i class="bi bi-chat-dots me-2"></i>Mensagens
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">
+            <i class="bi bi-person me-2"></i>Perfil
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="report-tab" data-bs-toggle="tab" data-bs-target="#report" type="button" role="tab">
+            <i class="bi bi-clipboard-data me-2"></i>Relatório
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="matchTabContent">
+    <!-- Messages Tab -->
+    <div class="tab-pane fade show active" id="messages" role="tabpanel">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Conversa</h6>
+                <span class="badge bg-primary" id="message-count">0</span>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;" id="messages-container">
+                <div class="loading-spinner">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Tab -->
+    <div class="tab-pane fade" id="profile" role="tabpanel">
+        <div class="row g-4">
+            <!-- Profile Info Card -->
+            <div class="col-12 col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Informações do Perfil</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">Nome</label>
+                                <div id="profile-name" class="fw-bold">-</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">Idade</label>
+                                <div id="profile-age">-</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">Distância</label>
+                                <div id="profile-distance">-</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">Cidade</label>
+                                <div id="profile-city">-</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">Trabalho</label>
+                                <div id="profile-job">-</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">Escola</label>
+                                <div id="profile-school">-</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">Gênero</label>
+                                <div id="profile-gender">-</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small">O que procura</label>
+                                <div id="profile-intent">-</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small">Orientação Sexual</label>
+                                <div id="profile-orientation">-</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small">Data do Match</label>
+                                <div id="profile-matched-at">-</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small">Bio</label>
+                                <div id="profile-bio" class="text-break">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interests Card -->
+                <div class="card mt-4" id="interests-card" style="display: none;">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-heart me-2"></i>Interesses</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="profile-interests" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photos Card -->
+            <div class="col-12 col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-images me-2"></i>Fotos</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="profile-photos" class="d-flex flex-column gap-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Tab -->
+    <div class="tab-pane fade" id="report" role="tabpanel">
+        <div id="report-loading" class="loading-spinner">
+            <div class="spinner-border" role="status"></div>
+        </div>
+        <div id="report-content" style="display: none;">
+            <div class="row g-4">
+                <!-- Summary Cards -->
+                <div class="col-12 col-md-4">
+                    <div class="stat-card">
+                        <div class="icon purple">
+                            <i class="bi bi-thermometer-half"></i>
+                        </div>
+                        <div class="value" id="report-temperature">-</div>
+                        <div class="label">Temperatura da Conversa</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="stat-card">
+                        <div class="icon green">
+                            <i class="bi bi-heart-fill"></i>
+                        </div>
+                        <div class="value" id="report-engagement">-</div>
+                        <div class="label">Engajamento</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="stat-card">
+                        <div class="icon blue">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="value" id="report-progression">-</div>
+                        <div class="label">Progressão</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-2">
+                <!-- Conversation Summary -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-chat-text me-2"></i>Resumo da Conversa</h6>
+                        </div>
+                        <div class="card-body">
+                            <p id="report-summary" class="mb-0">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Topic Suggestions -->
+                <div class="col-12 col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Sugestões de Tópicos</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="report-topics"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Message Suggestions -->
+                <div class="col-12 col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-chat-right-text me-2"></i>Sugestões de Mensagens</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="report-messages"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compatibility Analysis -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-people me-2"></i>Análise de Compatibilidade</h6>
+                        </div>
+                        <div class="card-body">
+                            <p id="report-compatibility" class="mb-0">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strengths and Warnings -->
+                <div class="col-12 col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-check-circle me-2"></i>Pontos Fortes</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul id="report-strengths" class="mb-0"></ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Alertas</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul id="report-warnings" class="mb-0"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const matchId = {{ match_id }};
+    let currentMatch = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMatchData();
+        
+        // Carregar perfil quando a tab for ativada
+        document.getElementById('profile-tab').addEventListener('shown.bs.tab', function () {
+            if (!currentMatch || !currentMatch.profileLoaded) {
+                loadProfileData();
+            }
+        });
+        
+        // Carregar relatório quando a tab for ativada
+        document.getElementById('report-tab').addEventListener('shown.bs.tab', function () {
+            if (!currentMatch || !currentMatch.reportLoaded) {
+                loadReportData();
+            }
+        });
+    });
+    
+    async function loadMatchData() {
+        try {
+            const response = await fetch(`/api/matches/${matchId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                currentMatch = result.data;
+                currentMatch.profileLoaded = false;
+                
+                // Atualizar header
+                document.getElementById('match-name').textContent = result.data.name || 'Sem nome';
+                const ageText = result.data.age ? `${result.data.age} anos` : 'Idade não informada';
+                document.getElementById('match-age').textContent = ageText;
+                
+                // Atualizar contador de mensagens
+                document.getElementById('message-count').textContent = result.data.message_count || 0;
+                
+                // Renderizar mensagens
+                renderMessages(result.data.messages || []);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar match:', error);
+        }
+    }
+    
+    async function loadProfileData() {
+        try {
+            const response = await fetch(`/api/matches/${matchId}/profile`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const profile = result.profile;
+                currentMatch.profileLoaded = true;
+                
+                // Informações básicas
+                document.getElementById('profile-name').textContent = profile.name || '-';
+                document.getElementById('profile-age').textContent = profile.age ? `${profile.age} anos` : '-';
+                document.getElementById('profile-distance').textContent = profile.distance_km ? `${profile.distance_km} km` : '-';
+                document.getElementById('profile-city').textContent = profile.city || '-';
+                document.getElementById('profile-job').textContent = profile.job_title || '-';
+                document.getElementById('profile-school').textContent = profile.school || '-';
+                document.getElementById('profile-gender').textContent = formatGender(profile.gender);
+                document.getElementById('profile-intent').textContent = formatIntent(profile.relationship_intent);
+                document.getElementById('profile-orientation').textContent = profile.sexual_orientations || '-';
+                document.getElementById('profile-matched-at').textContent = profile.matched_at ? formatDate(profile.matched_at) : '-';
+                document.getElementById('profile-bio').textContent = profile.bio || 'Sem bio';
+                
+                // Interesses
+                if (profile.interests && profile.interests.length > 0) {
+                    document.getElementById('interests-card').style.display = 'block';
+                    const interestsContainer = document.getElementById('profile-interests');
+                    interestsContainer.innerHTML = profile.interests.map(interest => 
+                        `<span class="badge bg-secondary">${interest}</span>`
+                    ).join('');
+                }
+                
+                // Fotos
+                if (profile.photos && profile.photos.length > 0) {
+                    const photosContainer = document.getElementById('profile-photos');
+                    photosContainer.innerHTML = profile.photos.map(photo => 
+                        `<img src="${photo.url}" class="img-fluid rounded" alt="Foto do perfil">`
+                    ).join('');
+                } else {
+                    document.getElementById('profile-photos').innerHTML = 
+                        '<p class="text-muted mb-0">Sem fotos disponíveis</p>';
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar perfil:', error);
+        }
+    }
+    
+    function renderMessages(messages) {
+        const container = document.getElementById('messages-container');
+        
+        if (messages.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-chat-dots"></i>
+                    <p>Nenhuma mensagem ainda</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = messages.map(msg => {
+            const isMine = msg.is_from_me;
+            const alignment = isMine ? 'text-end' : 'text-start';
+            const bgColor = isMine ? 'bg-primary' : 'bg-secondary';
+            const timestamp = msg.sent_at ? new Date(msg.sent_at).toLocaleString('pt-BR') : '';
+            const aiLabel = msg.ai_generated ? '<i class="bi bi-robot ms-2" title="Gerada por IA"></i>' : '';
+            
+            return `
+                <div class="mb-3 ${alignment}">
+                    <div class="d-inline-block">
+                        <div class="badge ${bgColor} text-start" style="max-width: 400px; white-space: normal; text-align: left !important;">
+                            ${msg.content}
+                            ${aiLabel}
+                        </div>
+                        <div class="text-muted small mt-1">${timestamp}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Scroll para a última mensagem
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function formatGender(gender) {
+        const genderMap = {
+            'male': 'Masculino',
+            'female': 'Feminino',
+            'non-binary': 'Não-binário'
+        };
+        return genderMap[gender] || gender || '-';
+    }
+    
+    function formatIntent(intent) {
+        const intentMap = {
+            'relationship': 'Relacionamento sério',
+            'casual': 'Algo casual',
+            'friendship': 'Amizade'
+        };
+        return intentMap[intent] || intent || '-';
+    }
+    
+    function formatDate(isoDate) {
+        return new Date(isoDate).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+    
+    async function loadReportData() {
+        try {
+            document.getElementById('report-loading').style.display = 'block';
+            document.getElementById('report-content').style.display = 'none';
+            
+            const response = await fetch(`/api/matches/${matchId}/report`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const report = result.report;
+                currentMatch.reportLoaded = true;
+                
+                // Scores
+                document.getElementById('report-temperature').textContent = 
+                    `${formatTemperature(report.conversation_temperature)} (${report.temperature_score?.toFixed(1) || '-'})`;
+                document.getElementById('report-engagement').textContent = 
+                    `${report.engagement_score?.toFixed(1) || '-'}/10`;
+                document.getElementById('report-progression').textContent = 
+                    `${report.progression_score?.toFixed(1) || '-'}/10`;
+                
+                // Summary
+                document.getElementById('report-summary').textContent = 
+                    report.conversation_summary || 'Nenhum resumo disponível';
+                
+                // Topics
+                const topicsContainer = document.getElementById('report-topics');
+                if (report.topic_suggestions && report.topic_suggestions.length > 0) {
+                    topicsContainer.innerHTML = report.topic_suggestions.map(topic => `
+                        <div class="mb-3 p-3 border rounded">
+                            <h6 class="mb-1">${topic.topic}</h6>
+                            <p class="text-muted small mb-2">${topic.reason}</p>
+                            <p class="mb-0"><strong>Exemplo:</strong> "${topic.example}"</p>
+                        </div>
+                    `).join('');
+                } else {
+                    topicsContainer.innerHTML = '<p class="text-muted mb-0">Nenhuma sugestão disponível</p>';
+                }
+                
+                // Next messages
+                const messagesContainer = document.getElementById('report-messages');
+                if (report.next_message_suggestions && report.next_message_suggestions.length > 0) {
+                    messagesContainer.innerHTML = report.next_message_suggestions.map(msg => `
+                        <div class="badge bg-primary mb-2 me-2 text-start" style="white-space: normal; display: inline-block;">
+                            ${msg}
+                        </div>
+                    `).join('');
+                } else {
+                    messagesContainer.innerHTML = '<p class="text-muted mb-0">Nenhuma sugestão disponível</p>';
+                }
+                
+                // Compatibility
+                document.getElementById('report-compatibility').textContent = 
+                    report.compatibility_analysis || 'Análise não disponível';
+                
+                // Strengths
+                const strengthsList = document.getElementById('report-strengths');
+                if (report.strengths && report.strengths.length > 0) {
+                    strengthsList.innerHTML = report.strengths.map(s => `<li>${s}</li>`).join('');
+                } else {
+                    strengthsList.innerHTML = '<li class="text-muted">Nenhum ponto forte identificado</li>';
+                }
+                
+                // Warnings
+                const warningsList = document.getElementById('report-warnings');
+                if (report.warnings && report.warnings.length > 0) {
+                    warningsList.innerHTML = report.warnings.map(w => `<li>${w}</li>`).join('');
+                } else {
+                    warningsList.innerHTML = '<li class="text-muted">Nenhum alerta</li>';
+                }
+                
+                document.getElementById('report-loading').style.display = 'none';
+                document.getElementById('report-content').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar relatório:', error);
+            document.getElementById('report-loading').innerHTML = 
+                '<p class="text-danger">Erro ao carregar relatório</p>';
+        }
+    }
+    
+    function formatTemperature(temp) {
+        const tempMap = {
+            'hot': '🔥 Quente',
+            'warm': '😊 Morna',
+            'cold': '❄️ Fria'
+        };
+        return tempMap[temp] || temp || '-';
+    }
+</script>
+{% endblock %}

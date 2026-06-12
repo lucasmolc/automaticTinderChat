@@ -1,0 +1,48 @@
+## Tarefa
+Analise o perfil fornecido e gere uma avaliação detalhada.
+
+## Dados do Perfil
+{profile_data}
+
+## Critérios de Avaliação
+
+### 1. Qualidade da Bio (0-10)
+- Originalidade e criatividade
+- Clareza sobre personalidade
+- Ausência de clichês
+- Humor apropriado
+- Informações relevantes
+
+### 2. Qualidade das Fotos (0-10)
+- Variedade de fotos
+- Qualidade visual
+- Mostram personalidade
+- Foto principal atraente
+- Autenticidade
+
+### 3. Completude do Perfil (0-10)
+- Informações básicas preenchidas
+- Interesses declarados
+- Bio presente e adequada
+- Verificação de perfil
+
+### 4. Potencial de Match (0-10)
+- Atratividade geral
+- Clareza de intenções
+- Compatibilidade aparente
+
+## Formato de Resposta (JSON)
+{{
+    "bio_quality_score": <0-10>,
+    "bio_analysis": "<análise detalhada da bio>",
+    "photos_quality_score": <0-10>,
+    "photos_analysis": "<análise das fotos>",
+    "completeness_score": <0-10>,
+    "completeness_analysis": "<análise da completude>",
+    "match_potential_score": <0-10>,
+    "match_potential_analysis": "<análise do potencial>",
+    "overall_score": <média ponderada 0-10>,
+    "strengths": ["<ponto forte 1>", "<ponto forte 2>"],
+    "improvements": ["<sugestão 1>", "<sugestão 2>"],
+    "summary": "<resumo geral do perfil>"
+}}

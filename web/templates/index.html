@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Dashboard</h1>
+        <p class="text-muted mb-0">Visão geral do sistema de automação</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="refreshData()">
+            <i class="bi bi-arrow-clockwise"></i> Atualizar
+        </button>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in">
+            <div class="icon pink">
+                <i class="bi bi-heart-fill"></i>
+            </div>
+            <div class="value" id="stat-matches">-</div>
+            <div class="label">Total de Matches</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.1s">
+            <div class="icon green">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <div class="value" id="stat-new">-</div>
+            <div class="label">Matches Novos</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.2s">
+            <div class="icon yellow">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="value" id="stat-awaiting">-</div>
+            <div class="label">Aguardando Resposta</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.3s">
+            <div class="icon purple">
+                <i class="bi bi-whatsapp"></i>
+            </div>
+            <div class="value" id="stat-whatsapp">-</div>
+            <div class="label">WhatsApp Obtidos</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.4s">
+            <div class="icon blue">
+                <i class="bi bi-chat-left-text-fill"></i>
+            </div>
+            <div class="value" id="stat-active">-</div>
+            <div class="label">Matches Ativos</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.5s">
+            <div class="icon green">
+                <i class="bi bi-send-fill"></i>
+            </div>
+            <div class="value" id="stat-sent">-</div>
+            <div class="label">Mensagens Enviadas</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.6s">
+            <div class="icon orange">
+                <i class="bi bi-envelope-fill"></i>
+            </div>
+            <div class="value" id="stat-received">-</div>
+            <div class="label">Mensagens Recebidas</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.7s">
+            <div class="icon pink">
+                <i class="bi bi-slash-circle-fill"></i>
+            </div>
+            <div class="value" id="stat-blocked">-</div>
+            <div class="label">Matches Bloqueados</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-4">
+    <!-- Recent Matches -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-people me-2"></i>Matches Recentes
+                </h6>
+                <a href="/matches" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Match</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-matches">
+                            <tr>
+                                <td colspan="3">
+                                    <div class="loading-spinner">
+                                        <div class="spinner-border" role="status"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Messages -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-chat-dots me-2"></i>Mensagens Recentes
+                </h6>
+                <a href="/messages" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>De</th>
+                                <th>Mensagem</th>
+                                <th>Quando</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-messages">
+                            <tr>
+                                <td colspan="3">
+                                    <div class="loading-spinner">
+                                        <div class="spinner-border" role="status"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load stats on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStats();
+        loadRecentMatches();
+        loadRecentMessages();
+        
+        // Auto refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    });
+    
+    function refreshData() {
+        loadStats();
+        loadRecentMatches();
+        loadRecentMessages();
+    }
+    
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/stats');
+            const result = await response.json();
+            
+            if (result.success) {
+                const data = result.data;
+                document.getElementById('stat-matches').textContent = data.total_matches;
+                document.getElementById('stat-new').textContent = data.new_matches;
+                document.getElementById('stat-awaiting').textContent = data.awaiting_response;
+                document.getElementById('stat-whatsapp').textContent = data.whatsapp_obtained;
+                document.getElementById('stat-active').textContent = data.active_matches;
+                document.getElementById('stat-sent').textContent = data.messages_sent;
+                document.getElementById('stat-received').textContent = data.messages_received;
+                document.getElementById('stat-blocked').textContent = data.blocked_matches;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar stats:', error);
+        }
+    }
+    
+    async function loadRecentMatches() {
+        try {
+            const response = await fetch('/api/matches?limit=5');
+            const result = await response.json();
+            
+            const tbody = document.getElementById('recent-matches');
+            
+            if (result.success && result.data.length > 0) {
+                tbody.innerHTML = result.data.map(match => `
+                    <tr>
+                        <td>
+                            <div class="match-info">
+                                ${match.photo_url 
+                                    ? `<img src="${match.photo_url}" class="match-avatar" alt="${match.name}" onerror="this.outerHTML='<div class=\\'match-avatar placeholder\\'><i class=\\'bi bi-person\\'></i></div>'">`
+                                    : `<div class="match-avatar placeholder"><i class="bi bi-person"></i></div>`
+                                }
+                                <div>
+                                    <div class="match-name">${match.name}</div>
+                                    <div class="match-age">${match.age ? match.age + ' anos' : ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-${match.status_color}">${match.status_label}</span>
+                        </td>
+                        <td class="text-muted small">${formatRelativeTime(match.created_at)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty-state py-4">
+                                <i class="bi bi-people"></i>
+                                <p>Nenhum match encontrado</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar matches:', error);
+        }
+    }
+    
+    async function loadRecentMessages() {
+        try {
+            const response = await fetch('/api/messages/recent?limit=5');
+            const result = await response.json();
+            
+            const tbody = document.getElementById('recent-messages');
+            
+            if (result.success && result.data.length > 0) {
+                tbody.innerHTML = result.data.map(msg => `
+                    <tr>
+                        <td>
+                            <div class="match-info">
+                                ${msg.match.photo_url 
+                                    ? `<img src="${msg.match.photo_url}" class="match-avatar" alt="${msg.match.name}" onerror="this.outerHTML='<div class=\\'match-avatar placeholder\\'><i class=\\'bi bi-person\\'></i></div>'">`
+                                    : `<div class="match-avatar placeholder"><i class="bi bi-person"></i></div>`
+                                }
+                                <div>
+                                    <div class="match-name">${msg.is_from_me ? 'Você' : msg.match.name}</div>
+                                    <div class="match-age">${msg.is_from_me ? '→ ' + msg.match.name : ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="message-preview ${msg.is_from_me ? '' : ''}">${msg.content}</div>
+                        </td>
+                        <td class="text-muted small">${formatRelativeTime(msg.sent_at)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty-state py-4">
+                                <i class="bi bi-chat-dots"></i>
+                                <p>Nenhuma mensagem encontrada</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar mensagens:', error);
+        }
+    }
+</script>
+{% endblock %}

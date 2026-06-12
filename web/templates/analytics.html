@@ -1,0 +1,896 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Analytics</h1>
+        <p class="text-muted mb-0">Métricas e estatísticas do sistema</p>
+    </div>
+    <div class="d-flex gap-2">
+        <select class="form-select" id="periodSelect" style="width: auto;" onchange="loadAnalytics()">
+            <option value="7">Últimos 7 dias</option>
+            <option value="14">Últimos 14 dias</option>
+            <option value="30">Últimos 30 dias</option>
+        </select>
+        <button class="btn btn-outline-secondary" onclick="loadAnalytics()">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-3">
+        <div class="stat-card">
+            <div class="icon pink">
+                <i class="bi bi-heart-fill"></i>
+            </div>
+            <div class="value" id="stat-total-matches">-</div>
+            <div class="label">Total de Matches</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="stat-card">
+            <div class="icon green">
+                <i class="bi bi-chat-fill"></i>
+            </div>
+            <div class="value" id="stat-total-messages">-</div>
+            <div class="label">Total de Mensagens</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="stat-card">
+            <div class="icon blue">
+                <i class="bi bi-percent"></i>
+            </div>
+            <div class="value" id="stat-response-rate">-</div>
+            <div class="label">Taxa de Resposta</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="stat-card">
+            <div class="icon purple">
+                <i class="bi bi-whatsapp"></i>
+            </div>
+            <div class="value" id="stat-conversion-rate">-</div>
+            <div class="label">Taxa de Conversão</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Atividade ao Longo do Tempo</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Status dos Matches</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Stats -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Métricas Detalhadas</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted mb-3">Matches</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Novos</span>
+                                <span class="fw-bold text-success" id="detail-new">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Ativos</span>
+                                <span class="fw-bold text-primary" id="detail-active">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Aguardando</span>
+                                <span class="fw-bold text-warning" id="detail-awaiting">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Bloqueados</span>
+                                <span class="fw-bold text-danger" id="detail-blocked">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted mb-3">Mensagens</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Enviadas</span>
+                                <span class="fw-bold" id="detail-sent">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Recebidas</span>
+                                <span class="fw-bold" id="detail-received">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Média por Match</span>
+                                <span class="fw-bold" id="detail-avg-messages">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted mb-3">Conversões</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>WhatsApp Obtidos</span>
+                                <span class="fw-bold text-success" id="detail-whatsapp">-</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Taxa de Sucesso</span>
+                                <span class="fw-bold" id="detail-success-rate">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Metrics Section -->
+<div class="row g-4 mt-2">
+    <!-- Conversion Funnel -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-funnel me-2"></i>Funil de Conversão</h6>
+            </div>
+            <div class="card-body">
+                <div id="conversion-funnel">
+                    <!-- Carregado via JavaScript -->
+                    <div class="text-center text-muted py-4">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <span class="ms-2">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Temperature Stats -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-thermometer-half me-2"></i>Conversão por Temperatura</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="temperatureChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- A/B Testing Results (if available) -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Resultados A/B Testing</h6>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadABTests()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="ab-tests-container">
+                    <div class="text-center text-muted py-4">
+                        <span>Carregando experimentos...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ML Insights Dashboard -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-cpu me-2 text-warning"></i>ML Insights - Otimização Adaptativa
+                </h6>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-warning" onclick="runAutoAdjust()" title="Ajustar pesos automaticamente">
+                        <i class="bi bi-magic"></i> Auto-Ajustar
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadMLInsights()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="ml-insights-container">
+                    <div class="text-center text-muted py-4">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <span class="ms-2">Carregando ML Insights...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activityChart = null;
+    let statusChart = null;
+    let temperatureChart = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initCharts();
+        loadAnalytics();
+        loadConversionFunnel();
+        loadTemperatureStats();
+        loadABTests();
+        loadMLInsights();
+    });
+    
+    function initCharts() {
+        // Activity Chart
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        activityChart = new Chart(activityCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Matches',
+                        data: [],
+                        borderColor: '#fe3c72',
+                        backgroundColor: 'rgba(254, 60, 114, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Mensagens Enviadas',
+                        data: [],
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#a6adc8'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: '#313244'
+                        },
+                        ticks: {
+                            color: '#a6adc8'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: '#313244'
+                        },
+                        ticks: {
+                            color: '#a6adc8'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Novos', 'Ativos', 'Aguardando', 'Bloqueados'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(234, 179, 8, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#a6adc8',
+                            padding: 20
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+    
+    async function loadAnalytics() {
+        await Promise.all([
+            loadStats(),
+            loadTimeline()
+        ]);
+    }
+    
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/stats');
+            const result = await response.json();
+            
+            if (result.success) {
+                const data = result.data;
+                
+                // Summary cards
+                document.getElementById('stat-total-matches').textContent = data.total_matches;
+                document.getElementById('stat-total-messages').textContent = 
+                    data.messages_sent + data.messages_received;
+                
+                // Calculate response rate
+                const responseRate = data.total_matches > 0 
+                    ? Math.round((data.active_matches / data.total_matches) * 100) 
+                    : 0;
+                document.getElementById('stat-response-rate').textContent = responseRate + '%';
+                
+                // Calculate conversion rate (WhatsApp)
+                const conversionRate = data.total_matches > 0 
+                    ? Math.round((data.whatsapp_obtained / data.total_matches) * 100) 
+                    : 0;
+                document.getElementById('stat-conversion-rate').textContent = conversionRate + '%';
+                
+                // Detailed stats
+                document.getElementById('detail-new').textContent = data.new_matches;
+                document.getElementById('detail-active').textContent = data.active_matches;
+                document.getElementById('detail-awaiting').textContent = data.awaiting_response;
+                document.getElementById('detail-blocked').textContent = data.blocked_matches;
+                document.getElementById('detail-sent').textContent = data.messages_sent;
+                document.getElementById('detail-received').textContent = data.messages_received;
+                document.getElementById('detail-whatsapp').textContent = data.whatsapp_obtained;
+                
+                // Average messages per match
+                const totalMessages = data.messages_sent + data.messages_received;
+                const avgMessages = data.total_matches > 0 
+                    ? (totalMessages / data.total_matches).toFixed(1) 
+                    : '0';
+                document.getElementById('detail-avg-messages').textContent = avgMessages;
+                
+                // Success rate
+                document.getElementById('detail-success-rate').textContent = conversionRate + '%';
+                
+                // Update status chart
+                statusChart.data.datasets[0].data = [
+                    data.new_matches,
+                    data.active_matches,
+                    data.awaiting_response,
+                    data.blocked_matches
+                ];
+                statusChart.update();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar stats:', error);
+        }
+    }
+    
+    async function loadTimeline() {
+        const days = document.getElementById('periodSelect').value;
+        
+        try {
+            const response = await fetch(`/api/analytics/timeline?days=${days}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const data = result.data;
+                
+                // Generate date labels for the period
+                const labels = [];
+                const matchesData = [];
+                const messagesData = [];
+                
+                for (let i = days - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    labels.push(date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+                    
+                    // Find data for this date
+                    const matchEntry = data.matches_by_day.find(d => d.date === dateStr);
+                    const msgEntry = data.messages_by_day.find(d => d.date === dateStr);
+                    
+                    matchesData.push(matchEntry ? matchEntry.count : 0);
+                    messagesData.push(msgEntry ? msgEntry.count : 0);
+                }
+                
+                // Update chart
+                activityChart.data.labels = labels;
+                activityChart.data.datasets[0].data = matchesData;
+                activityChart.data.datasets[1].data = messagesData;
+                activityChart.update();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar timeline:', error);
+        }
+    }
+    
+    // ===================== CONVERSION FUNNEL =====================
+    
+    async function loadConversionFunnel() {
+        try {
+            const response = await fetch('/api/metrics/conversion-funnel');
+            const result = await response.json();
+            
+            if (result.success) {
+                renderFunnel(result.data);
+            } else {
+                document.getElementById('conversion-funnel').innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        ${result.error || 'Erro ao carregar funil'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar funil:', error);
+            document.getElementById('conversion-funnel').innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Erro ao carregar dados
+                </div>
+            `;
+        }
+    }
+    
+    function renderFunnel(data) {
+        const container = document.getElementById('conversion-funnel');
+        const colors = ['#fe3c72', '#ff6b6b', '#ffa07a', '#ffd700', '#22c55e', '#10b981'];
+        
+        let html = '<div class="funnel-container">';
+        
+        data.forEach((stage, index) => {
+            const width = Math.max(stage.percentage, 10);
+            const color = colors[index % colors.length];
+            
+            html += `
+                <div class="funnel-stage mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-medium">${stage.stage}</span>
+                        <span class="text-muted small">${stage.count} (${stage.percentage}%)</span>
+                    </div>
+                    <div class="progress" style="height: 24px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: ${width}%; background-color: ${color};" 
+                             aria-valuenow="${stage.percentage}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    // ===================== TEMPERATURE STATS =====================
+    
+    async function loadTemperatureStats() {
+        try {
+            const response = await fetch('/api/metrics/temperature-stats');
+            const result = await response.json();
+            
+            if (result.success) {
+                renderTemperatureChart(result.data);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar stats de temperatura:', error);
+        }
+    }
+    
+    function renderTemperatureChart(data) {
+        const ctx = document.getElementById('temperatureChart').getContext('2d');
+        
+        if (temperatureChart) {
+            temperatureChart.destroy();
+        }
+        
+        const conversionData = data.conversion_by_temperature || [];
+        const labels = conversionData.map(d => `Temp ${d.temperature}`);
+        const totals = conversionData.map(d => d.total);
+        const rates = conversionData.map(d => d.conversion_rate);
+        
+        temperatureChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Total Matches',
+                        data: totals,
+                        backgroundColor: 'rgba(254, 60, 114, 0.6)',
+                        borderColor: '#fe3c72',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Taxa Conversão (%)',
+                        data: rates,
+                        type: 'line',
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: '#a6adc8' }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#313244' },
+                        ticks: { color: '#a6adc8' }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        grid: { color: '#313244' },
+                        ticks: { color: '#a6adc8' },
+                        title: {
+                            display: true,
+                            text: 'Quantidade',
+                            color: '#a6adc8'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: { 
+                            color: '#22c55e',
+                            callback: value => value + '%'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Conversão %',
+                            color: '#22c55e'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // ===================== A/B TESTING =====================
+    
+    async function loadABTests() {
+        try {
+            const response = await fetch('/api/ab-testing/experiments');
+            const result = await response.json();
+            
+            if (result.success) {
+                renderABTests(result.data);
+            } else {
+                document.getElementById('ab-tests-container').innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        ${result.error || 'A/B Testing não disponível'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar A/B tests:', error);
+            document.getElementById('ab-tests-container').innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Erro ao carregar experimentos
+                </div>
+            `;
+        }
+    }
+    
+    function renderABTests(experiments) {
+        const container = document.getElementById('ab-tests-container');
+        
+        if (!experiments || experiments.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-flask me-2"></i>
+                    Nenhum experimento A/B configurado
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '<div class="row g-3">';
+        
+        experiments.forEach(exp => {
+            const statusBadge = exp.is_active 
+                ? '<span class="badge bg-success">Ativo</span>'
+                : '<span class="badge bg-secondary">Pausado</span>';
+            
+            html += `
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="border rounded p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1">${exp.name}</h6>
+                                <small class="text-muted">${exp.description || 'Sem descrição'}</small>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="mt-3">
+                            ${exp.variants.map(v => `
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small">${v.name}</span>
+                                    <div class="text-end">
+                                        <span class="badge bg-dark">${v.impressions} imp</span>
+                                        <span class="badge bg-${v.conversion_rate > 0 ? 'success' : 'secondary'}">${v.conversion_rate}%</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="mt-2 text-muted small">
+                            Total: ${exp.total_impressions} impressões
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    // ===================== ML INSIGHTS =====================
+    
+    async function loadMLInsights() {
+        const container = document.getElementById('ml-insights-container');
+        
+        try {
+            const response = await fetch('/api/ml/insights');
+            const result = await response.json();
+            
+            if (result.success) {
+                renderMLInsights(result.stats, result.experiments);
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        ${result.error || 'ML Insights não disponível'}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Erro ao carregar ML Insights:', error);
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Erro ao carregar ML Insights
+                </div>
+            `;
+        }
+    }
+    
+    function renderMLInsights(stats, experiments) {
+        const container = document.getElementById('ml-insights-container');
+        
+        if (!experiments || experiments.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-cpu me-2"></i>
+                    Nenhum dado de ML disponível ainda.
+                    <br><small>Os dados são coletados automaticamente com o uso do sistema.</small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Stats Summary
+        let html = `
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="bg-dark bg-opacity-25 rounded p-3 text-center">
+                        <div class="fs-4 fw-bold text-warning">${stats.total_experiments}</div>
+                        <small class="text-muted">Experimentos</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-dark bg-opacity-25 rounded p-3 text-center">
+                        <div class="fs-4 fw-bold text-info">${stats.total_variants}</div>
+                        <small class="text-muted">Variantes</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-dark bg-opacity-25 rounded p-3 text-center">
+                        <div class="fs-4 fw-bold text-success">${stats.total_samples}</div>
+                        <small class="text-muted">Amostras</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bg-dark bg-opacity-25 rounded p-3 text-center">
+                        <div class="fs-4 fw-bold text-primary">${stats.patterns_identified}</div>
+                        <small class="text-muted">Padrões</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Experiments details
+        html += '<div class="row g-3">';
+        
+        experiments.forEach(exp => {
+            if (exp.error) return;
+            
+            const winner = exp.winner;
+            const significance = exp.statistical_significance || {};
+            
+            const sigBadge = significance.significant 
+                ? '<span class="badge bg-success">Estatisticamente Significativo</span>'
+                : '<span class="badge bg-secondary">Coletando dados...</span>';
+            
+            html += `
+                <div class="col-12 col-lg-6">
+                    <div class="border border-warning border-opacity-25 rounded p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1 text-warning">
+                                    <i class="bi bi-lightbulb me-2"></i>${exp.experiment}
+                                </h6>
+                                <small class="text-muted">${exp.total_samples} amostras</small>
+                            </div>
+                            ${sigBadge}
+                        </div>
+                        
+                        ${winner ? `
+                            <div class="alert alert-success py-2 mb-3">
+                                <small>
+                                    <i class="bi bi-trophy me-1"></i>
+                                    <strong>Líder:</strong> ${winner.name} 
+                                    (${winner.response_rate}% resposta, ${winner.success_rate}% sucesso)
+                                </small>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="mb-3">
+                            ${(exp.variants || []).map(v => {
+                                const confidenceColor = {
+                                    'very_low': 'secondary',
+                                    'low': 'warning',
+                                    'medium': 'info',
+                                    'high': 'success',
+                                    'very_high': 'primary'
+                                }[v.confidence] || 'secondary';
+                                
+                                return `
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <span class="small">${v.name}</span>
+                                            <span class="badge bg-${confidenceColor} ms-1" title="Confiança: ${v.confidence}">${v.confidence}</span>
+                                        </div>
+                                        <div class="text-end small">
+                                            <span class="text-muted">${v.total_uses} usos</span>
+                                            <span class="badge bg-dark ms-1">${v.response_rate}% resp</span>
+                                            <span class="badge bg-success ms-1">${v.success_rate}% sucesso</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        
+                        ${exp.recommendation ? `
+                            <div class="bg-dark bg-opacity-50 rounded p-2 small">
+                                <i class="bi bi-lightbulb text-warning me-1"></i>
+                                ${exp.recommendation}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="mt-2 text-end">
+                            <button class="btn btn-sm btn-outline-warning" onclick="autoAdjustExperiment('${exp.experiment}')">
+                                <i class="bi bi-magic me-1"></i>Auto-Ajustar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    async function autoAdjustExperiment(experimentName) {
+        try {
+            const response = await fetch(`/api/ml/auto-adjust/${experimentName}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ min_samples: 30 })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast('Pesos ajustados com sucesso!', 'success');
+                loadMLInsights();
+                loadABTests(); // Recarregar A/B também
+            } else {
+                showToast(result.error || 'Erro ao ajustar', 'warning');
+            }
+        } catch (error) {
+            console.error('Erro ao auto-ajustar:', error);
+            showToast('Erro ao ajustar experimento', 'danger');
+        }
+    }
+    
+    async function runAutoAdjust() {
+        // Ajustar todos os experimentos
+        try {
+            const response = await fetch('/api/ml/insights');
+            const result = await response.json();
+            
+            if (result.success && result.experiments) {
+                for (const exp of result.experiments) {
+                    if (exp.experiment && !exp.error) {
+                        await autoAdjustExperiment(exp.experiment);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao auto-ajustar todos:', error);
+        }
+    }
+    
+    function showToast(message, type = 'info') {
+        // Simple toast notification
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} position-fixed bottom-0 end-0 m-3`;
+        toast.style.zIndex = '9999';
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+</script>
+{% endblock %}
