@@ -1,0 +1,31 @@
+{# Linhas da tabela de matches recentes — renderizado via HTMX. #}
+{% if matches %}
+    {% for m in matches %}
+    <tr>
+        <td>
+            <div class="match-info">
+                {% if m.photo_url %}
+                <img src="{{ m.photo_url }}" class="match-avatar" alt="{{ m.name }}">
+                {% else %}
+                <div class="match-avatar placeholder"><i class="bi bi-person"></i></div>
+                {% endif %}
+                <div>
+                    <div class="match-name">{{ m.name }}</div>
+                    <div class="match-age">{% if m.age %}{{ m.age }} anos{% endif %}</div>
+                </div>
+            </div>
+        </td>
+        <td><span class="badge bg-{{ m.status_color }}">{{ m.status_label }}</span></td>
+        <td class="text-muted small">{{ m.created_at | relative_time }}</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="3">
+            <div class="empty-state py-4">
+                <i class="bi bi-people"></i>
+                <p>Nenhum match encontrado</p>
+            </div>
+        </td>
+    </tr>
+{% endif %}

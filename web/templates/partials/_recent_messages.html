@@ -1,0 +1,31 @@
+{# Linhas da tabela de mensagens recentes — renderizado via HTMX. #}
+{% if messages %}
+    {% for msg in messages %}
+    <tr>
+        <td>
+            <div class="match-info">
+                {% if msg.photo_url %}
+                <img src="{{ msg.photo_url }}" class="match-avatar" alt="{{ msg.match_name }}">
+                {% else %}
+                <div class="match-avatar placeholder"><i class="bi bi-person"></i></div>
+                {% endif %}
+                <div>
+                    <div class="match-name">{{ 'Você' if msg.is_from_me else msg.match_name }}</div>
+                    <div class="match-age">{% if msg.is_from_me %}→ {{ msg.match_name }}{% endif %}</div>
+                </div>
+            </div>
+        </td>
+        <td><div class="message-preview">{{ msg.content }}</div></td>
+        <td class="text-muted small">{{ msg.sent_at | relative_time }}</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr>
+        <td colspan="3">
+            <div class="empty-state py-4">
+                <i class="bi bi-chat-dots"></i>
+                <p>Nenhuma mensagem encontrada</p>
+            </div>
+        </td>
+    </tr>
+{% endif %}

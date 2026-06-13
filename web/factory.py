@@ -73,4 +73,28 @@ def create_app() -> Flask:
         get_task_manager()
         logger.debug("✅ Background Tasks habilitado")
 
+    # Filtro Jinja para tempo relativo (usado nos fragmentos HTMX)
+    from datetime import datetime
+
+    @app.template_filter("relative_time")
+    def _relative_time(value):
+        if not value:
+            return "-"
+        try:
+            diff = datetime.utcnow() - value
+        except TypeError:
+            return "-"
+        minutes = int(diff.total_seconds() // 60)
+        if minutes < 1:
+            return "Agora"
+        if minutes < 60:
+            return f"{minutes}m atrás"
+        hours = minutes // 60
+        if hours < 24:
+            return f"{hours}h atrás"
+        days = hours // 24
+        if days < 7:
+            return f"{days}d atrás"
+        return value.strftime("%d/%m/%Y")
+
     return app

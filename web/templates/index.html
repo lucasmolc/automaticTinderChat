@@ -9,16 +9,18 @@
         <p class="text-muted mb-0">Visão geral do sistema de automação</p>
     </div>
     <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary" onclick="refreshData()">
+        <!-- Dispara o evento 'refresh' que todos os containers HTMX escutam -->
+        <button class="btn btn-outline-secondary"
+                onclick="document.body.dispatchEvent(new Event('refresh'))">
             <i class="bi bi-arrow-clockwise"></i> Atualizar
         </button>
     </div>
 </div>
 
-<!-- Stat Cards (carregados via HTMX a partir de /fragments/stats) -->
+<!-- Stat Cards (HTMX: carrega no load, a cada 30s e no botão Atualizar) -->
 <div id="stats-container"
      hx-get="/fragments/stats"
-     hx-trigger="load, every 30s"
+     hx-trigger="load, every 30s, refresh from:body"
      hx-swap="innerHTML">
     <div class="loading-spinner py-4">
         <div class="spinner-border" role="status"></div>
@@ -46,7 +48,10 @@
                                 <th>Data</th>
                             </tr>
                         </thead>
-                        <tbody id="recent-matches">
+                        <tbody id="recent-matches"
+                               hx-get="/fragments/recent-matches"
+                               hx-trigger="load, every 30s, refresh from:body"
+                               hx-swap="innerHTML">
                             <tr>
                                 <td colspan="3">
                                     <div class="loading-spinner">
@@ -60,7 +65,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Recent Messages -->
     <div class="col-12 col-lg-6">
         <div class="card">
@@ -80,7 +85,10 @@
                                 <th>Quando</th>
                             </tr>
                         </thead>
-                        <tbody id="recent-messages">
+                        <tbody id="recent-messages"
+                               hx-get="/fragments/recent-messages"
+                               hx-trigger="load, every 30s, refresh from:body"
+                               hx-swap="innerHTML">
                             <tr>
                                 <td colspan="3">
                                     <div class="loading-spinner">
@@ -95,117 +103,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // As estatísticas são carregadas/atualizadas via HTMX (#stats-container).
-    // Aqui cuidamos apenas das tabelas de atividade recente.
-    document.addEventListener('DOMContentLoaded', function() {
-        loadRecentMatches();
-        loadRecentMessages();
-
-        // Auto refresh every 30 seconds
-        setInterval(refreshData, 30000);
-    });
-
-    function refreshData() {
-        // Recarrega as stats via HTMX e as tabelas via fetch.
-        if (window.htmx) {
-            htmx.ajax('GET', '/fragments/stats', { target: '#stats-container', swap: 'innerHTML' });
-        }
-        loadRecentMatches();
-        loadRecentMessages();
-    }
-
-    async function loadRecentMatches() {
-        try {
-            const response = await fetch('/api/matches?limit=5');
-            const result = await response.json();
-            
-            const tbody = document.getElementById('recent-matches');
-            
-            if (result.success && result.data.length > 0) {
-                tbody.innerHTML = result.data.map(match => `
-                    <tr>
-                        <td>
-                            <div class="match-info">
-                                ${match.photo_url 
-                                    ? `<img src="${match.photo_url}" class="match-avatar" alt="${match.name}" onerror="this.outerHTML='<div class=\\'match-avatar placeholder\\'><i class=\\'bi bi-person\\'></i></div>'">`
-                                    : `<div class="match-avatar placeholder"><i class="bi bi-person"></i></div>`
-                                }
-                                <div>
-                                    <div class="match-name">${match.name}</div>
-                                    <div class="match-age">${match.age ? match.age + ' anos' : ''}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-${match.status_color}">${match.status_label}</span>
-                        </td>
-                        <td class="text-muted small">${formatRelativeTime(match.created_at)}</td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="3">
-                            <div class="empty-state py-4">
-                                <i class="bi bi-people"></i>
-                                <p>Nenhum match encontrado</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-        } catch (error) {
-            console.error('Erro ao carregar matches:', error);
-        }
-    }
-    
-    async function loadRecentMessages() {
-        try {
-            const response = await fetch('/api/messages/recent?limit=5');
-            const result = await response.json();
-            
-            const tbody = document.getElementById('recent-messages');
-            
-            if (result.success && result.data.length > 0) {
-                tbody.innerHTML = result.data.map(msg => `
-                    <tr>
-                        <td>
-                            <div class="match-info">
-                                ${msg.match.photo_url 
-                                    ? `<img src="${msg.match.photo_url}" class="match-avatar" alt="${msg.match.name}" onerror="this.outerHTML='<div class=\\'match-avatar placeholder\\'><i class=\\'bi bi-person\\'></i></div>'">`
-                                    : `<div class="match-avatar placeholder"><i class="bi bi-person"></i></div>`
-                                }
-                                <div>
-                                    <div class="match-name">${msg.is_from_me ? 'Você' : msg.match.name}</div>
-                                    <div class="match-age">${msg.is_from_me ? '→ ' + msg.match.name : ''}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="message-preview ${msg.is_from_me ? '' : ''}">${msg.content}</div>
-                        </td>
-                        <td class="text-muted small">${formatRelativeTime(msg.sent_at)}</td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="3">
-                            <div class="empty-state py-4">
-                                <i class="bi bi-chat-dots"></i>
-                                <p>Nenhuma mensagem encontrada</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-        } catch (error) {
-            console.error('Erro ao carregar mensagens:', error);
-        }
-    }
-</script>
 {% endblock %}
