@@ -8,7 +8,6 @@ import re
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from bs4 import BeautifulSoup
 from playwright.async_api import Page
 
 from config import TINDER_MATCHES_URL, get_settings
