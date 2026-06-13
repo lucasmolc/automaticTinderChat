@@ -368,7 +368,6 @@ def api_matches():
         search = sanitize_search_input(request.args.get('search', ''), max_length=100)
         
         # Paginação sanitizada (máximo 100 por página)
-        page = sanitize_integer(request.args.get('page', 1), default=1, min_value=1)
         limit = sanitize_integer(request.args.get('limit', 50), default=50, min_value=1, max_value=100)
         offset = sanitize_integer(request.args.get('offset', 0), default=0, min_value=0, max_value=100000)
         
@@ -3226,11 +3225,6 @@ def api_ai_performance():
             # Total de mensagens AI
             ai_messages = session.query(func.count(Message.id))\
                 .filter(Message.ai_generated == True).scalar() or 0
-            
-            # Taxa de resposta para mensagens AI vs manuais
-            ai_with_response = session.query(func.count(func.distinct(Message.match_id)))\
-                .filter(Message.ai_generated == True)\
-                .filter(Message.sender == 'user').scalar() or 0
             
             manual_messages = session.query(func.count(Message.id))\
                 .filter(Message.ai_generated == False)\

@@ -10,6 +10,7 @@ Modernização e limpeza (sem mudança de comportamento da aplicação):
 - **Qualidade**: imports ordenados em todo o projeto.
 - **Dependências**: removidas as não usadas (`selenium`, `webdriver-manager`, `aiohttp`, `lxml`, `beautifulsoup4`, `cachetools`) e o pino incorreto `asyncio` (é stdlib); demais atualizadas para versões estáveis recentes (Playwright 1.49, Flask 3.1, SQLAlchemy 2.0.36, Pydantic 2.10, pytest 8.3).
 - **UI**: CSS e JS inline extraídos de `base.html` (1626 → 152 linhas) para `static/css/tokens.css`, `static/css/main.css` e `static/js/app.js`.
+- **Onboarding/DX**: `Dockerfile` (base oficial Playwright), `docker-compose.yml` (SQLite por padrão, PostgreSQL opcional), `.dockerignore` e `Makefile` com atalhos de desenvolvimento.
 - **Correção**: `logger` reconfigura `stdout`/`stderr` para UTF-8, evitando `UnicodeEncodeError` com emojis em consoles Windows (cp1252).
 - **CI**: fixture de teste impede o launch de um navegador Playwright real em testes unitários (que quebrava o CI sem browser/display).
 

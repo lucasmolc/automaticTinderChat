@@ -19,8 +19,6 @@ def main():
     db.initialize()
     
     with db.get_session() as session:
-        match_repo = MatchRepository(session)
-        
         # Buscar todos os matches ativos (não bloqueados, não unmatch)
         matches = session.query(Match).filter(
             Match.is_blocked == False,

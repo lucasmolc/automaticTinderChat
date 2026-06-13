@@ -1,0 +1,37 @@
+# Onboarding em um comando:  docker compose up --build
+# Sobe a interface web em http://localhost:5000 usando SQLite (zero config).
+# Para PostgreSQL, descomente o serviço `db` e ajuste DATABASE_URL.
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      # Sem DATABASE_URL => SQLite local em /app/data (persistido no volume).
+      - DATABASE_URL=${DATABASE_URL:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - BROWSER_HEADLESS=true
+    volumes:
+      - app_data:/app/data
+      - app_logs:/app/logs
+    restart: unless-stopped
+
+  # PostgreSQL opcional. Para usar:
+  #  1. descomente este serviço e o volume db_data
+  #  2. defina DATABASE_URL=postgresql+psycopg2://tinder:tinder@db:5432/tinderchat
+  #  3. adicione `psycopg2-binary` ao requirements (ou instale na imagem)
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     - POSTGRES_USER=tinder
+  #     - POSTGRES_PASSWORD=tinder
+  #     - POSTGRES_DB=tinderchat
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+volumes:
+  app_data:
+  app_logs:
+  # db_data:

@@ -1002,8 +1002,6 @@ class AIInteractionRepository:
         Returns:
             Dict com estatísticas completas por provedor e tipo
         """
-        cutoff_date = datetime.utcnow() - timedelta(days=days)
-        
         # Custo total
         total_cost = self.get_total_cost(days)
         total_tokens = self.get_total_tokens(days)

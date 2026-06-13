@@ -462,9 +462,6 @@ class AutomationOrchestrator:
                         self.stats["unmatches_detected"] += 1
                         continue
                     
-                    # Identificar interesses em comum usando o helper
-                    common = data_fetcher.get_common_interests(match_profile.get("interests", []))
-                    
                     # Gerar mensagem com IA
                     ai_result = self.openai.generate_first_message(
                         match_profile=match_profile
@@ -1800,7 +1797,7 @@ async def sync_matches_only(
                                 
                                 # Adicionar todas as mensagens novamente
                                 for msg in conversation:
-                                    new_msg = msg_repo.create(
+                                    msg_repo.create(
                                         match_id=match.id,
                                         content=msg["content"],
                                         is_from_me=msg["is_from_me"]

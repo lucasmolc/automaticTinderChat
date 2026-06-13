@@ -112,12 +112,7 @@ class AnalyticsService:
             
             # Custo de IA (últimos 30 dias)
             thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-            ai_cost = session.query(AIInteraction).filter(
-                AIInteraction.created_at >= thirty_days_ago
-            ).with_entities(
-                # Importar func do SQLAlchemy
-            ).all()
-            
+
             # Calcular custo total
             total_cost = sum(
                 interaction.estimated_cost or 0
