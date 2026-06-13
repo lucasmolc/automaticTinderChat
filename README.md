@@ -93,6 +93,17 @@ cp .env.example .env            # configure suas chaves (opcional)
 python run_web.py
 ```
 
+### Via Docker (onboarding em um comando)
+
+```bash
+docker compose up --build       # interface web em http://localhost:5000 (SQLite)
+```
+
+A imagem usa a base oficial do Playwright (com navegadores). O banco padrão é
+SQLite, persistido em volume; PostgreSQL é uma opção comentada no `docker-compose.yml`.
+
+> Há um `Makefile` com atalhos: `make install`, `make test`, `make lint`, `make web`, `make docker-up`.
+
 ### Configuração
 
 Tudo é opcional para começar. Para personalizar (chave de IA, banco, prompts), edite o `.env` e copie `config/prompts/personal_context.example.txt` → `personal_context.txt`. Variáveis documentadas em [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
@@ -164,10 +175,11 @@ O CI no GitHub Actions roda a suite em Python 3.9, 3.11 e 3.12 a cada push/PR.
 - [x] Banco plugável: SQLite por padrão, PostgreSQL/SQL Server opcionais
 - [x] Tooling de qualidade (ruff, pyproject) e limpeza de dependências
 - [x] UI — Fase 1: CSS/JS extraídos para arquivos + design tokens
+- [x] Docker / docker-compose para onboarding em um comando + Makefile de DX
 - [ ] UI — Fases 2-4: HTMX/Alpine, redesign visual, modais nativos
 - [ ] Backend: app factory + Blueprints (quebrar `web/app.py`)
 - [ ] Flask → FastAPI (async nativo + OpenAPI automático)
-- [ ] Migrações com Alembic e Docker Compose
+- [ ] Migrações com Alembic
 
 Detalhes e justificativas em [docs/TECHNOLOGY.md](docs/TECHNOLOGY.md).
 
