@@ -1,0 +1,10 @@
+/* ============================================================
+   Design tokens — variáveis de tema (cores, gradientes).
+   Trocar a marca = editar estas variáveis.
+   ============================================================ */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #fe3c72 0%, #ff6b6b 100%);
+            --card-bg: #1e1e2e;
+            --sidebar-bg: #181825;
+            --text-muted: #6c757d;
+        }
