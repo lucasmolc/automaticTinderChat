@@ -9,14 +9,17 @@ Cobre:
 - API web: toggle resend status
 """
 
-import pytest
 from datetime import datetime
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from database.models import Match, Message
 from database.repositories import (
-    MatchRepository, MessageRepository,
-    pending_resend_filter, active_match_filter
+    MatchRepository,
+    MessageRepository,
+    active_match_filter,
+    pending_resend_filter,
 )
 
 
@@ -211,6 +214,7 @@ class TestResendExecutionService:
             # Setup mock session
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
+
             from database.models import Base
             
             engine = create_engine("sqlite:///:memory:")
@@ -241,6 +245,7 @@ class TestResendExecutionService:
         with patch("automation.execution_service.get_db_manager") as mock_db:
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
+
             from database.models import Base
             
             engine = create_engine("sqlite:///:memory:")

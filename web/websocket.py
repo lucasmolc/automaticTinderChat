@@ -13,14 +13,15 @@ Escalabilidade:
 - Padrão pub/sub para fan-out de mensagens
 """
 
+import json
 import os
-from typing import Dict, Set, Optional
+import threading
 from datetime import datetime
+from typing import Dict, Optional, Set
+
 from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from loguru import logger
-import threading
-import json
 
 # Configuração do Redis para escalabilidade (opcional)
 REDIS_URL = os.getenv('REDIS_URL', None)

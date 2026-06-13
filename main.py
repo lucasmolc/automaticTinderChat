@@ -11,11 +11,10 @@ Script principal que:
 """
 
 import os
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
 from pathlib import Path
-
 
 # Diretório raiz do projeto
 PROJECT_ROOT = Path(__file__).parent.absolute()

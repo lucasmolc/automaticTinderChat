@@ -2,10 +2,11 @@
 Testes para o serviço ML Adaptive e Scheduler.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
 import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestPromptPerformance:

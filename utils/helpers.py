@@ -46,6 +46,7 @@ def safe_json_dumps(obj: Any, default: str = "{}") -> str:
 def extract_json_from_text(text: str) -> dict:
     """Extrai JSON de uma string que pode conter texto adicional."""
     import re
+
     from loguru import logger
     
     if not text:
@@ -132,6 +133,7 @@ def _fix_escaped_string_values(data: dict) -> dict:
 def _manual_json_extract(json_str: str) -> dict:
     """Extração manual de campos comuns quando o parsing falha."""
     import re
+
     from loguru import logger
     
     result = {}

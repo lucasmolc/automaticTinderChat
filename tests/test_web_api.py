@@ -2,10 +2,11 @@
 Testes para a API Web Flask.
 """
 
-import pytest
 import json
-from unittest.mock import MagicMock, patch
 from datetime import datetime
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestAPIStats:

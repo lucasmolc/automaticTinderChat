@@ -8,13 +8,14 @@ IMPORTANTE: O estado é persistido em arquivo JSON para sobreviver a:
 - Múltiplos processos/threads acessando o mesmo estado
 """
 
-import os
 import json
+import os
 import signal
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict
 from threading import Lock
+from typing import Dict, Optional
+
 from loguru import logger
 
 # Arquivo de controle de estado

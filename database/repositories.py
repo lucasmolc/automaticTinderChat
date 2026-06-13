@@ -4,16 +4,26 @@ Implementa padrão Repository para cada entidade.
 """
 
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
+
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, and_, or_
+
+from utils.logger import get_logger
 
 from .models import (
-    MyProfile, MyProfilePhoto, MyProfileInterest,
-    Match, MatchPhoto, MatchInterest, Message,
-    ExecutionLog, AIInteraction, Analytics, MatchReport
+    AIInteraction,
+    Analytics,
+    ExecutionLog,
+    Match,
+    MatchInterest,
+    MatchPhoto,
+    MatchReport,
+    Message,
+    MyProfile,
+    MyProfileInterest,
+    MyProfilePhoto,
 )
-from utils.logger import get_logger
 
 # Importar validação de nome do módulo de fetching
 try:
@@ -585,7 +595,7 @@ class MatchRepository:
         deleted_count = 0
         for match in old_matches:
             # Primeiro deletar registros relacionados em TODAS as tabelas que referenciam match
-            from .models import Message, AIInteraction
+            from .models import AIInteraction, Message
             self.session.query(AIInteraction).filter(AIInteraction.match_id == match.id).delete()
             self.session.query(Message).filter(Message.match_id == match.id).delete()
             self.session.query(MatchPhoto).filter(MatchPhoto.match_id == match.id).delete()

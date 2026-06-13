@@ -7,11 +7,12 @@ Pode ser substituído por Celery quando Redis estiver disponível.
 
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Any
+from typing import Any, Callable, Dict, List, Optional
+
 from loguru import logger
 
 

@@ -2,9 +2,10 @@
 Testes para utilitários e helpers.
 """
 
-import pytest
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
+
+import pytest
 
 
 class TestHelpers:

@@ -3,10 +3,11 @@ Testes de edge cases e cenários limite.
 Garante robustez em situações inesperadas.
 """
 
-import pytest
-import sys
-import os
 import json
+import os
+import sys
+
+import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -227,8 +228,9 @@ class TestJSONSerialization:
     
     def test_datetime_serialization(self):
         """Testa serialização de datetime - requer conversão manual."""
-        from utils.helpers import safe_json_dumps
         from datetime import datetime
+
+        from utils.helpers import safe_json_dumps
         
         # safe_json_dumps não suporta datetime nativamente
         # Os dados devem ser convertidos antes
@@ -247,8 +249,9 @@ class TestJSONSerialization:
     
     def test_datetime_direct_fails_gracefully(self):
         """Testa que datetime direto retorna default."""
-        from utils.helpers import safe_json_dumps
         from datetime import datetime
+
+        from utils.helpers import safe_json_dumps
         
         data = {
             "created_at": datetime.utcnow(),  # Objeto datetime direto
@@ -315,8 +318,8 @@ class TestDatabaseEdgeCases:
     
     def test_very_long_bio(self, db_session):
         """Testa bio muito longa."""
-        from database.models import Match
         from database import MatchRepository
+        from database.models import Match
         
         repo = MatchRepository(db_session)
         
@@ -338,8 +341,9 @@ class TestDatabaseEdgeCases:
     
     def test_special_characters_in_name(self, db_session):
         """Testa caracteres especiais no nome."""
-        from database import MatchRepository
         import uuid
+
+        from database import MatchRepository
         
         repo = MatchRepository(db_session)
         
@@ -367,8 +371,9 @@ class TestDatabaseEdgeCases:
     
     def test_duplicate_match_id(self, db_session):
         """Testa ID de match duplicado."""
-        from database import MatchRepository
         import uuid
+
+        from database import MatchRepository
         
         repo = MatchRepository(db_session)
         

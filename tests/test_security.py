@@ -3,19 +3,20 @@ Testes de segurança para a aplicação.
 Verifica sanitização de inputs e proteções contra ataques.
 """
 
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.input_sanitizer import (
-    sanitize_search_input,
-    sanitize_integer,
     sanitize_boolean,
-    sanitize_sort_field,
+    sanitize_integer,
     sanitize_pagination,
-    validate_match_id
+    sanitize_search_input,
+    sanitize_sort_field,
+    validate_match_id,
 )
 
 

@@ -4,13 +4,23 @@ Define todas as tabelas e relacionamentos.
 """
 
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Float, Boolean, 
-    ForeignKey, create_engine, event, Index
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    event,
 )
-from sqlalchemy.orm import relationship, declarative_base, Session
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, declarative_base, relationship
 
 Base = declarative_base()
 

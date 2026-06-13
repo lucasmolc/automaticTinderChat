@@ -6,14 +6,12 @@ Gerencia sessão, login e navegação no Tinder.
 import asyncio
 from pathlib import Path
 from typing import Optional
-from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 
-from config import (
-    get_settings, BROWSER_DATA_DIR,
-    TINDER_URL, TINDER_APP_URL, TINDER_MATCHES_URL
-)
-from utils.logger import get_logger, log_file_only, console_log
+from playwright.async_api import Browser, BrowserContext, Page, async_playwright
+
+from config import BROWSER_DATA_DIR, TINDER_APP_URL, TINDER_MATCHES_URL, TINDER_URL, get_settings
 from utils.helpers import async_random_delay
+from utils.logger import console_log, get_logger, log_file_only
 
 logger = get_logger(__name__)
 

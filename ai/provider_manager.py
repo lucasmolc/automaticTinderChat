@@ -3,27 +3,28 @@ Gerenciador central de provedores de IA.
 Coordena múltiplos provedores e permite alternar entre eles.
 """
 
-import os
 import json
-from typing import Dict, List, Optional, Type
+import os
 from pathlib import Path
 from threading import Lock
+from typing import Dict, List, Optional, Type
 
-from .base_provider import (
-    BaseAIProvider, 
-    AIResponse, 
-    AIProviderStatus,
-    AIProviderError,
-    BudgetExceededError,
-    RateLimitError,
-    AuthenticationError
-)
-from .openai_provider import OpenAIProvider
-from .deepseek_provider import DeepSeekProvider
-from .claude_provider import ClaudeProvider
+from utils.ai_logger import log_ai_interaction
 from utils.logger import get_logger
 from utils.notifications import get_notification_manager
-from utils.ai_logger import log_ai_interaction
+
+from .base_provider import (
+    AIProviderError,
+    AIProviderStatus,
+    AIResponse,
+    AuthenticationError,
+    BaseAIProvider,
+    BudgetExceededError,
+    RateLimitError,
+)
+from .claude_provider import ClaudeProvider
+from .deepseek_provider import DeepSeekProvider
+from .openai_provider import OpenAIProvider
 
 logger = get_logger(__name__)
 

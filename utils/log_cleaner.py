@@ -18,14 +18,15 @@ Exemplo de uso:
     stop_event = start_log_cleaner(interval_hours=24)
 """
 
-import os
 import gzip
+import os
 import shutil
 import threading
-from pathlib import Path
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
 from loguru import logger
 
 from config import LOGS_DIR, get_settings

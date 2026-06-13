@@ -6,6 +6,7 @@ Evita duplicação de código entre extractors.py, profile_syncer.py e sync_hand
 import re
 from datetime import datetime
 from typing import Dict, List, Optional, Set
+
 from playwright.async_api import Page
 
 from utils.logger import get_logger

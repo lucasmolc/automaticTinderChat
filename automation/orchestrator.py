@@ -6,44 +6,63 @@ Coordena todas as operações de automação.
 import asyncio
 import random
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
-from config import get_settings, TINDER_MATCHES_URL
-from database import (
-    get_db_manager, MyProfileRepository, MatchRepository,
-    MessageRepository, ExecutionLogRepository, AIInteractionRepository,
-    AnalyticsRepository, Match, Message
-)
 from ai import get_openai_client
-from utils.logger import (
-    get_logger, log_automation_step, log_ai_decision, log_file_only,
-    console_start, console_stop, console_complete,
-    console_sync_start, console_sync_complete,
-    console_matches_loaded, console_processing_match,
-    console_message_sent, console_message_skipped,
-    console_error, console_warning, console_cycle,
-    console_waiting, console_whatsapp_detected, console_stats
+from config import TINDER_MATCHES_URL, get_settings
+from database import (
+    AIInteractionRepository,
+    AnalyticsRepository,
+    ExecutionLogRepository,
+    Match,
+    MatchRepository,
+    Message,
+    MessageRepository,
+    MyProfileRepository,
+    get_db_manager,
 )
-from utils.helpers import async_random_delay, safe_json_dumps, clean_message_preview
-from utils.whatsapp_detector import analyze_message_for_progression
+from utils.ab_testing import get_ab_manager
+from utils.helpers import async_random_delay, clean_message_preview, safe_json_dumps
+from utils.logger import (
+    console_complete,
+    console_cycle,
+    console_error,
+    console_matches_loaded,
+    console_message_sent,
+    console_message_skipped,
+    console_processing_match,
+    console_start,
+    console_stats,
+    console_stop,
+    console_sync_complete,
+    console_sync_start,
+    console_waiting,
+    console_warning,
+    console_whatsapp_detected,
+    get_logger,
+    log_ai_decision,
+    log_automation_step,
+    log_file_only,
+)
 from utils.notifications import get_notification_manager, notify
-from .state_manager import get_state_manager
+from utils.whatsapp_detector import analyze_message_for_progression
 
 from .browser import BrowserController, get_browser
+from .execution_service import get_execution_service
 from .extractors import TinderDataExtractor
+
+# Importar novos serviços da arquitetura refatorada
+from .match_data_service import get_match_data_service
 from .match_helpers import (
-    MatchValidator, 
-    MatchDataFetcher, 
+    MatchDataFetcher,
+    MatchValidator,
+    extract_complete_profile,
     get_profile_cache,
     retry_with_backoff,
     validate_ai_message,
     validate_ai_message_with_context,
-    extract_complete_profile
 )
-# Importar novos serviços da arquitetura refatorada
-from .match_data_service import get_match_data_service
-from .execution_service import get_execution_service
-from utils.ab_testing import get_ab_manager
+from .state_manager import get_state_manager
 
 logger = get_logger(__name__)
 

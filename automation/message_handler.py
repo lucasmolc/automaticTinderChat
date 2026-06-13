@@ -3,21 +3,25 @@ Handler para envio e resposta de mensagens.
 Extraído do orchestrator para melhor organização.
 """
 
-import random
 import asyncio
+import random
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
+from ai import get_openai_client
 from config import get_settings
 from database import (
-    get_db_manager, MatchRepository, MessageRepository, 
-    AIInteractionRepository, MyProfileRepository
+    AIInteractionRepository,
+    MatchRepository,
+    MessageRepository,
+    MyProfileRepository,
+    get_db_manager,
 )
-from ai import get_openai_client
-from utils.logger import get_logger, log_automation_step
 from utils.helpers import safe_json_dumps
-from utils.whatsapp_detector import analyze_message_for_progression
+from utils.logger import get_logger, log_automation_step
 from utils.notifications import get_notification_manager, notify
+from utils.whatsapp_detector import analyze_message_for_progression
+
 from .match_helpers import get_profile_cache, validate_ai_message
 
 logger = get_logger(__name__)

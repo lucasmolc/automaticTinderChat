@@ -5,6 +5,7 @@ Permite persistência de rate limits entre restarts quando usando Redis.
 
 import os
 from typing import Optional
+
 from utils.logger import get_logger
 
 logger = get_logger(__name__)

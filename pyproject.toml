@@ -1,0 +1,56 @@
+[project]
+name = "automatic-tinder-chat"
+version = "2.8.0"
+description = "Estudo de caso de integração entre IA generativa, automação de navegador e persistência de dados."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+extend-exclude = [".venv", "browser_data", "logs", "reports", "data"]
+
+[tool.ruff.lint]
+# Conjunto pragmático: erros (E/F), imports (I), bugbear (B),
+# comprehensions (C4), pyupgrade (UP). Mantido enxuto para não inundar
+# o projeto com avisos de estilo.
+select = ["E", "F", "I", "B", "C4", "UP"]
+ignore = [
+    "E501",   # comprimento de linha (controlado pelo formatter)
+    "B008",   # chamadas em argumentos default (comum em Flask)
+    "E402",   # imports após código (alguns módulos ajustam sys.path antes)
+    "E711",   # `== None`: necessário em filtros SQLAlchemy (gera IS NULL)
+    "E712",   # `== True/False`: idiomático em filtros SQLAlchemy
+    "E722",   # bare except: legado pervasivo; tratar caso a caso, não em massa
+    "B904",   # raise ... from: melhoria incremental, não bloqueante
+    "B007",   # variável de loop não usada: ruído
+    "UP006",  # List->list etc.: churn grande de baixo valor agora
+    "UP035",  # imports typing depreciados: idem UP006
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "F401", "F811"]
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--tb=short"
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+markers = [
+    "slow: testes lentos (deselect com -m 'not slow')",
+    "integration: testes de integração",
+    "asyncio: testes assíncronos",
+    "e2e: testes ponta-a-ponta (deselect com -m 'not e2e')",
+]

@@ -4,9 +4,9 @@ Define a interface comum para todas as integrações de IA.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class AIProviderError(Exception):

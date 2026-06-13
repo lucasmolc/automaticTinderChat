@@ -8,8 +8,9 @@ Testa funcionalidades de:
 - Tratamento de cursores inválidos
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 
 
 class TestCursorPaginationEncoding:

@@ -3,29 +3,37 @@ Extratores de dados do Tinder.
 Parsers para perfis, matches e mensagens.
 """
 
-import re
 import asyncio
+import re
 from datetime import datetime
 from typing import Dict, List, Optional
+
 from bs4 import BeautifulSoup
 from playwright.async_api import Page
 
-from config import get_settings, TINDER_MATCHES_URL
+from config import TINDER_MATCHES_URL, get_settings
+from utils.helpers import (
+    async_random_delay,
+    clean_city,
+    clean_message_preview,
+    normalize_message_content,
+    parse_name_and_age,
+    sanitize_text,
+)
 from utils.logger import get_logger, log_automation_step
-from utils.helpers import async_random_delay, sanitize_text, clean_message_preview, parse_name_and_age, normalize_message_content, clean_city
 
 # Importar funções compartilhadas para evitar duplicação de código
 from .tinder_scraping import (
-    EXTRACT_PHOTOS_JS,
     EXTRACT_BIO_JS,
     EXTRACT_MATCHES_LIST_JS,
-    extract_photos_from_page,
+    EXTRACT_PHOTOS_JS,
     extract_bio_from_page,
-    extract_matches_list_from_page,
     extract_date_from_text,
+    extract_matches_list_from_page,
+    extract_photos_from_page,
     filter_valid_photos,
+    navigate_to_match_chat,
     validate_match_id,
-    navigate_to_match_chat
 )
 
 logger = get_logger(__name__)

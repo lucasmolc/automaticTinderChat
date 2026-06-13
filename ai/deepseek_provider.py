@@ -5,19 +5,21 @@ Implementa a interface BaseAIProvider para a API da DeepSeek.
 
 import time
 from typing import Dict, List, Optional
+
 import requests
 
+from utils.logger import get_logger
+
 from .base_provider import (
-    BaseAIProvider, 
-    AIModel, 
-    AIResponse, 
-    AIProviderStatus,
+    AIModel,
     AIProviderError,
+    AIProviderStatus,
+    AIResponse,
+    AuthenticationError,
+    BaseAIProvider,
     BudgetExceededError,
     RateLimitError,
-    AuthenticationError
 )
-from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

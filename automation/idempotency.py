@@ -11,13 +11,13 @@ PRINCÍPIO: Uma mensagem só pode ser enviada UMA VEZ para cada match.
 Se houver QUALQUER dúvida, NÃO enviar.
 """
 
-import threading
 import hashlib
-from datetime import datetime
-from typing import Optional, Dict, Tuple, Set
-from dataclasses import dataclass, field
-from enum import Enum
+import threading
 from contextlib import contextmanager
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Dict, Optional, Set, Tuple
 
 from utils.logger import get_logger
 

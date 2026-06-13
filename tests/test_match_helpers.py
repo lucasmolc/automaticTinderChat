@@ -3,10 +3,11 @@ Testes para os helpers de match (match_helpers.py).
 Testa MatchValidator, MatchDataFetcher, ProfileCache e retry_with_backoff.
 """
 
-import pytest
 import asyncio
-from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 
 class TestMatchValidator:

@@ -14,17 +14,25 @@ Endpoint: /metrics
 
 import os
 import time
-from typing import Dict, Optional, Callable
-from functools import wraps
 from datetime import datetime
+from functools import wraps
+from typing import Callable, Dict, Optional
+
 from loguru import logger
 
 # Prometheus metrics
 try:
     from prometheus_client import (
-        Counter, Histogram, Gauge, Summary, Info,
-        generate_latest, CONTENT_TYPE_LATEST,
-        CollectorRegistry, multiprocess, REGISTRY
+        CONTENT_TYPE_LATEST,
+        REGISTRY,
+        CollectorRegistry,
+        Counter,
+        Gauge,
+        Histogram,
+        Info,
+        Summary,
+        generate_latest,
+        multiprocess,
     )
     from prometheus_flask_exporter import PrometheusMetrics
     PROMETHEUS_AVAILABLE = True
@@ -379,8 +387,9 @@ def collect_dashboard_metrics(db_session) -> Dict:
     Coleta métricas agregadas para o dashboard.
     Chamado periodicamente para atualizar métricas.
     """
-    from database.models import Match, Message
     from sqlalchemy import func
+
+    from database.models import Match, Message
     
     metrics = {}
     

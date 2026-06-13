@@ -16,11 +16,12 @@ from typing import Generator, Optional
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from config import get_settings
 from config.settings import PROJECT_ROOT
 from utils.logger import get_logger
+
 from .models import Base
 
 logger = get_logger(__name__)

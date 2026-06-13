@@ -20,35 +20,31 @@ Uso Recomendado:
 # Serviço centralizado (RECOMENDADO)
 from .ai_service import (
     AIService,
+    ai_chat,
     get_ai_service,
     get_openai_client,  # Alias para compatibilidade
-    ai_chat
 )
 
 # Sistema de provedores (baixo nível)
 from .base_provider import (
-    BaseAIProvider,
-    AIProviderError,
-    BudgetExceededError,
-    RateLimitError,
-    AuthenticationError,
-    ModelNotAvailableError,
-    AIProviderStatus,
     AIModel,
-    AIResponse
+    AIProviderError,
+    AIProviderStatus,
+    AIResponse,
+    AuthenticationError,
+    BaseAIProvider,
+    BudgetExceededError,
+    ModelNotAvailableError,
+    RateLimitError,
 )
+from .claude_provider import ClaudeProvider
+from .deepseek_provider import DeepSeekProvider
 
 # Provedores disponíveis
 from .openai_provider import OpenAIProvider
-from .deepseek_provider import DeepSeekProvider
-from .claude_provider import ClaudeProvider
 
 # Manager de provedores
-from .provider_manager import (
-    AIProviderManager,
-    get_ai_manager,
-    reset_ai_manager
-)
+from .provider_manager import AIProviderManager, get_ai_manager, reset_ai_manager
 
 __all__ = [
     # === Serviço Centralizado (USE ESTES) ===

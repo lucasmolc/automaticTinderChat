@@ -2,9 +2,10 @@
 Testes para o serviço de IA centralizado.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
 import json
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestAIService:
@@ -12,7 +13,7 @@ class TestAIService:
     
     def test_service_creation(self):
         """Testa criação do serviço."""
-        from ai import get_ai_service, AIService
+        from ai import AIService, get_ai_service
         
         service = get_ai_service()
         assert service is not None
@@ -20,7 +21,7 @@ class TestAIService:
     
     def test_get_openai_client_alias(self):
         """Testa que get_openai_client retorna AIService."""
-        from ai import get_openai_client, get_ai_service, AIService
+        from ai import AIService, get_ai_service, get_openai_client
         
         client = get_openai_client()
         service = get_ai_service()
@@ -51,7 +52,7 @@ class TestAIService:
     
     def test_chat_method_with_mock(self):
         """Testa método chat com mock do provider."""
-        from ai import get_ai_service, AIResponse
+        from ai import AIResponse, get_ai_service
         
         service = get_ai_service()
         
@@ -205,7 +206,7 @@ class TestProviderSystem:
     
     def test_provider_manager_exists(self):
         """Testa que o manager existe."""
-        from ai import get_ai_manager, AIProviderManager
+        from ai import AIProviderManager, get_ai_manager
         
         manager = get_ai_manager()
         assert manager is not None

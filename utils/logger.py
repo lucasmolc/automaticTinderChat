@@ -20,12 +20,12 @@ Arquivo contém:
 """
 
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 from loguru import logger
 
 from config import LOGS_DIR, get_settings
-
 
 # ==================== CONSTANTES DE FORMATAÇÃO ====================
 
@@ -53,7 +53,15 @@ EMOJI = {
 def setup_logger():
     """Configura o sistema de logging."""
     settings = get_settings()
-    
+
+    # Garante saída UTF-8 no console. Sem isto, consoles Windows em cp1252
+    # disparam UnicodeEncodeError ao logar emojis.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
     # Remover handler padrão
     logger.remove()
     

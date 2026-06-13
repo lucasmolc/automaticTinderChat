@@ -10,9 +10,10 @@ Testes que validam fluxos completos da aplicação:
 - Cache de perfis
 """
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 
 class TestE2EWebPages:
@@ -251,6 +252,7 @@ class TestE2EMatchLifecycle:
         """Cria banco de dados SQLite em memória para testes."""
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
         from database.models import Base
         
         engine = create_engine("sqlite:///:memory:", echo=False)
@@ -402,8 +404,8 @@ class TestE2EMatchLifecycle:
     
     def test_new_match_not_blocked_without_date(self, test_db):
         """Testa que match novo (sem last_interaction_at) não é bloqueado."""
-        from database.repositories import MatchRepository
         from automation.match_helpers import MatchValidator
+        from database.repositories import MatchRepository
         
         match_repo = MatchRepository(test_db)
         
@@ -427,6 +429,7 @@ class TestE2EConversationFlow:
         """Cria banco de dados SQLite em memória."""
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
         from database.models import Base
         
         engine = create_engine("sqlite:///:memory:", echo=False)
@@ -488,6 +491,7 @@ class TestE2EMatchFilters:
         """Cria banco de dados SQLite em memória."""
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
+
         from database.models import Base
         
         engine = create_engine("sqlite:///:memory:", echo=False)

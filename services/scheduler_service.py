@@ -5,9 +5,9 @@ Gerencia tarefas agendadas como auto-ajuste de ML e limpeza de dados.
 
 import threading
 import time
-from datetime import datetime, timedelta
-from typing import Dict, Callable, Optional, List
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Callable, Dict, List, Optional
 
 from utils.logger import get_logger
 
@@ -244,9 +244,10 @@ class SchedulerService:
     def _task_cleanup_logs(self):
         """Tarefa de limpeza de logs antigos."""
         try:
-            from pathlib import Path
-            from config.settings import PROJECT_ROOT
             import os
+            from pathlib import Path
+
+            from config.settings import PROJECT_ROOT
             
             logs_dir = PROJECT_ROOT / 'logs'
             if not logs_dir.exists():
