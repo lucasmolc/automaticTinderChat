@@ -8,10 +8,23 @@ Segue Semantic Versioning (SemVer): MAJOR.MINOR.PATCH
 - PATCH: Correções de bugs compatíveis
 """
 
-__version__ = "2.7.0"
+__version__ = "2.8.0"
 
 # Changelog resumido
 CHANGELOG = {
+    "2.8.0": {
+        "date": "2026-06-12",
+        "changes": [
+            "Tooling: ruff (lint+format) e config consolidada em pyproject.toml; .editorconfig",
+            "Qualidade: imports ordenados em todo o projeto",
+            "Deps: removidas dependências mortas (selenium, webdriver-manager, aiohttp, "
+            "lxml, beautifulsoup4, cachetools, asyncio); versões atualizadas",
+            "UI: CSS/JS inline extraídos de base.html (1626 -> 152 linhas) para "
+            "static/css/{tokens,main}.css e static/js/app.js",
+            "Correção: logger reconfigura stdout/stderr para UTF-8 (consoles Windows)",
+            "CI: fixture impede launch de navegador real em testes unitários",
+        ]
+    },
     "2.7.0": {
         "date": "2026-02-12",
         "changes": [

@@ -39,11 +39,14 @@ Manter a identidade dark + gradiente quente, mas formalizada como design system:
 
 ## Plano de execução incremental
 
-### Fase 1 — Extração (sem mudança visual)
-1. `base.html` → extrair CSS para `static/css/main.css` + `tokens.css`
-2. Helpers JS globais (formatDate, toasts, modais) → `static/js/app.js`
-3. Substituir modais artesanais pelos modais nativos do Bootstrap 5
-4. Adicionar SRI aos CDNs (ou vendorizar os assets)
+### Fase 1 — Extração (sem mudança visual) — ✅ concluída (v2.8.0)
+1. ✅ `base.html` → CSS extraído para `static/css/tokens.css` (design tokens) + `static/css/main.css`
+2. ✅ JS (notificações, websocket, toasts, modais) → `static/js/app.js`
+3. ⏳ Substituir modais artesanais pelos modais nativos do Bootstrap 5 (pendente)
+4. ⏳ Adicionar SRI aos CDNs / vendorizar assets (pendente)
+
+> Resultado: `base.html` reduzido de 1626 para 152 linhas; nenhum estilo/JS de
+> lógica inline restante. Renderização verificada (páginas e assets em HTTP 200).
 
 ### Fase 2 — HTMX nos fluxos de dados
 1. Endpoints de fragmento (`/fragments/stats`, `/fragments/matches-table`, …) renderizando parciais Jinja2
