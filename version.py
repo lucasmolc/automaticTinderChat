@@ -21,6 +21,10 @@ CHANGELOG = {
             "lxml, beautifulsoup4, cachetools, asyncio); versões atualizadas",
             "UI: CSS/JS inline extraídos de base.html (1626 -> 152 linhas) para "
             "static/css/{tokens,main}.css e static/js/app.js",
+            "Backend: app factory (web/factory.py) + estado compartilhado "
+            "(web/extensions.py) + extração de rotas auxiliares para blueprint "
+            "(web/app.py 3300 -> 1885 linhas)",
+            "Infra: Docker/docker-compose para onboarding + Makefile de DX",
             "Correção: logger reconfigura stdout/stderr para UTF-8 (consoles Windows)",
             "CI: fixture impede launch de navegador real em testes unitários",
         ]

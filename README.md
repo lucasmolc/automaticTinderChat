@@ -176,8 +176,9 @@ O CI no GitHub Actions roda a suite em Python 3.9, 3.11 e 3.12 a cada push/PR.
 - [x] Tooling de qualidade (ruff, pyproject) e limpeza de dependências
 - [x] UI — Fase 1: CSS/JS extraídos para arquivos + design tokens
 - [x] Docker / docker-compose para onboarding em um comando + Makefile de DX
+- [x] Backend: app factory + extensions + extração de rotas auxiliares para blueprint (`web/app.py` 3.300 → ~1.885 linhas)
+- [ ] Backend: extrair também as rotas de núcleo (stats/matches/profile) para blueprints
 - [ ] UI — Fases 2-4: HTMX/Alpine, redesign visual, modais nativos
-- [ ] Backend: app factory + Blueprints (quebrar `web/app.py`)
 - [ ] Flask → FastAPI (async nativo + OpenAPI automático)
 - [ ] Migrações com Alembic
 
