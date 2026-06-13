@@ -6,7 +6,8 @@ Substitui offset-based pagination que tem performance O(n) para O(1).
 import base64
 import json
 from datetime import datetime
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -121,7 +122,7 @@ def apply_cursor_pagination(
     Returns:
         Tuple (items, next_cursor, has_more)
     """
-    from sqlalchemy import desc, asc, and_, or_
+    from sqlalchemy import and_, asc, desc, or_
     
     order_field = getattr(model, order_by_field)
     id_attr = getattr(model, id_field)

@@ -4,8 +4,8 @@ Reutilizável em todo o projeto para evitar duplicação de código.
 """
 
 from datetime import datetime
-from typing import Optional, Dict, List, Any
 from threading import Lock
+from typing import Any, Dict, List, Optional
 
 from utils.logger import get_logger
 

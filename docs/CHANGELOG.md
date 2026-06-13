@@ -2,6 +2,17 @@
 
 Histórico de mudanças do projeto. Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versionamento: [SemVer](https://semver.org/lang/pt-BR/).
 
+## [2.8.0] - 2026-06-12
+
+Modernização e limpeza (sem mudança de comportamento da aplicação):
+
+- **Tooling**: `ruff` (lint + format) e configuração de testes consolidada em `pyproject.toml` (remove `pytest.ini`); `.editorconfig`.
+- **Qualidade**: imports ordenados em todo o projeto.
+- **Dependências**: removidas as não usadas (`selenium`, `webdriver-manager`, `aiohttp`, `lxml`, `beautifulsoup4`, `cachetools`) e o pino incorreto `asyncio` (é stdlib); demais atualizadas para versões estáveis recentes (Playwright 1.49, Flask 3.1, SQLAlchemy 2.0.36, Pydantic 2.10, pytest 8.3).
+- **UI**: CSS e JS inline extraídos de `base.html` (1626 → 152 linhas) para `static/css/tokens.css`, `static/css/main.css` e `static/js/app.js`.
+- **Correção**: `logger` reconfigura `stdout`/`stderr` para UTF-8, evitando `UnicodeEncodeError` com emojis em consoles Windows (cp1252).
+- **CI**: fixture de teste impede o launch de um navegador Playwright real em testes unitários (que quebrava o CI sem browser/display).
+
 ## [2.7.0] - 2026-02-12
 - Logging bruto de requests/responses da IA em `logs/ai_raw_YYYY-MM-DD.log`
 - Contexto pessoal (`config/prompts/personal_context.txt`) injetado em todas as chamadas à IA

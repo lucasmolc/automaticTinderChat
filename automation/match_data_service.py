@@ -11,11 +11,12 @@ PRINCÍPIO: A execução NUNCA deve buscar dados da tela.
            Todos os dados devem vir do banco (previamente sincronizados).
 """
 
-from typing import Optional, Dict, List, Tuple
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
 from database import Match, MatchRepository, MyProfileRepository
 from utils.logger import get_logger
+
 from .match_fetching import validate_and_clean_name
 
 logger = get_logger(__name__)

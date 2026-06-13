@@ -189,8 +189,8 @@ class TestEmbeddingsCacheHelpers(unittest.TestCase):
         mock_instance = MagicMock()
         MockCache.return_value = mock_instance
         
-        from services.embeddings_cache import get_embeddings_cache
         import services.embeddings_cache as ec
+        from services.embeddings_cache import get_embeddings_cache
         ec._embeddings_cache = None
         
         cache1 = get_embeddings_cache()

@@ -2,8 +2,9 @@
 Testes para modelos e repositórios do banco de dados.
 """
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

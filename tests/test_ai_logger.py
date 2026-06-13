@@ -8,8 +8,9 @@ Testa funcionalidades de:
 - Funções helper log_ai_interaction e log_ai_error
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestAIInteractionLoggerContextManager:

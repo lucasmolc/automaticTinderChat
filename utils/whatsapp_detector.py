@@ -3,7 +3,8 @@ Detector de WhatsApp e confirmações de encontro em mensagens.
 """
 
 import re
-from typing import Optional, Dict, Tuple
+from typing import Dict, Optional, Tuple
+
 from utils.logger import get_logger
 
 logger = get_logger(__name__)

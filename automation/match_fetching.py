@@ -3,14 +3,14 @@ Busca e extração de dados de matches.
 Módulo especializado em fetching de dados com retry e cache.
 """
 
-import re
 import asyncio
-from typing import Optional, Dict, List, Tuple
+import re
 from functools import wraps
+from typing import Dict, List, Optional, Tuple
 
-from database import MatchRepository, Match
-from utils.logger import get_logger, log_automation_step
+from database import Match, MatchRepository
 from utils.cache import get_profile_cache
+from utils.logger import get_logger, log_automation_step
 
 logger = get_logger(__name__)
 

@@ -8,8 +8,9 @@ Testa funcionalidades de:
 - Verificação de disponibilidade do Redis
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 
 class TestRateLimiterStorageConfiguration:

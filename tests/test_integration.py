@@ -5,10 +5,11 @@ Nota: Testes de ciclo de vida completo de match e fluxos E2E
 estão em test_e2e.py. Este arquivo foca em integração de unidades.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from datetime import datetime
 import json
+from datetime import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 
 class TestDatabaseIntegration:
@@ -106,10 +107,11 @@ class TestMatchHelpersIntegration:
     
     def test_match_validator_with_real_match(self, test_db):
         """Testa MatchValidator com match real do banco."""
+        from unittest.mock import MagicMock
+
+        from automation.match_helpers import MatchValidator
         from database.models import Match
         from database.repositories import MatchRepository
-        from automation.match_helpers import MatchValidator
-        from unittest.mock import MagicMock
         
         match_repo = MatchRepository(test_db)
         
@@ -136,9 +138,9 @@ class TestMatchHelpersIntegration:
     
     def test_profile_cache_integration_with_db(self, test_db):
         """Testa ProfileCache integrado com busca no banco."""
+        from automation.match_helpers import ProfileCache
         from database.models import Match
         from database.repositories import MatchRepository
-        from automation.match_helpers import ProfileCache
         
         match_repo = MatchRepository(test_db)
         cache = ProfileCache(ttl_seconds=60)

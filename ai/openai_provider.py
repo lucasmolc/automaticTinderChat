@@ -5,21 +5,25 @@ Implementa a interface BaseAIProvider para a API da OpenAI.
 
 import time
 from typing import Dict, List, Optional
-from openai import OpenAI, OpenAIError, RateLimitError as OpenAIRateLimitError, AuthenticationError as OpenAIAuthError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
+from openai import AuthenticationError as OpenAIAuthError
+from openai import OpenAI, OpenAIError
+from openai import RateLimitError as OpenAIRateLimitError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
+from utils.logger import get_logger
 
 from .base_provider import (
-    BaseAIProvider, 
-    AIModel, 
-    AIResponse, 
-    AIProviderStatus,
+    AIModel,
     AIProviderError,
-    BudgetExceededError,
-    RateLimitError,
+    AIProviderStatus,
+    AIResponse,
     AuthenticationError,
-    ModelNotAvailableError
+    BaseAIProvider,
+    BudgetExceededError,
+    ModelNotAvailableError,
+    RateLimitError,
 )
-from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

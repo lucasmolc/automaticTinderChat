@@ -9,8 +9,10 @@ from pathlib import Path
 # Garante que a raiz do projeto esteja no path, independente de onde o script roda.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from database import get_db_manager, MatchRepository, MessageRepository, Match, Message
 from sqlalchemy import desc
+
+from database import Match, MatchRepository, Message, MessageRepository, get_db_manager
+
 
 def main():
     db = get_db_manager()

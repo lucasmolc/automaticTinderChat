@@ -2,9 +2,10 @@
 Testes para funções de automação.
 """
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 
 class TestAutomationOrchestrator:
@@ -242,8 +243,8 @@ class TestProfileCacheUnification:
     
     def test_orchestrator_uses_singleton_cache(self):
         """Testa que o orchestrator usa o singleton ProfileCache."""
-        from automation.orchestrator import AutomationOrchestrator
         from automation.match_helpers import get_profile_cache
+        from automation.orchestrator import AutomationOrchestrator
         
         with patch("automation.orchestrator.get_db_manager"):
             with patch("automation.orchestrator.get_notification_manager"):
@@ -254,9 +255,10 @@ class TestProfileCacheUnification:
     
     def test_profile_cache_get_with_max_age(self):
         """Testa que _get_cached_profile respeita max_age."""
-        from automation.orchestrator import AutomationOrchestrator
-        from automation.match_helpers import get_profile_cache, reset_profile_cache
         from datetime import datetime, timedelta
+
+        from automation.match_helpers import get_profile_cache, reset_profile_cache
+        from automation.orchestrator import AutomationOrchestrator
         
         reset_profile_cache()  # Limpar estado anterior
         

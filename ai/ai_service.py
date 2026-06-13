@@ -16,18 +16,24 @@ Uso:
     response = ai_chat([{"role": "user", "content": "Olá"}])
 """
 
+import random
 import re
 import time
-import random
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-from config import get_settings, PROMPTS_DIR
-from utils.logger import get_logger, log_ai_decision, log_ai_raw_request, log_ai_raw_response, log_ai_raw_error
+from config import PROMPTS_DIR, get_settings
 from utils.helpers import extract_json_from_text
+from utils.logger import (
+    get_logger,
+    log_ai_decision,
+    log_ai_raw_error,
+    log_ai_raw_request,
+    log_ai_raw_response,
+)
 
+from .base_provider import AIProviderError, AIResponse
 from .provider_manager import get_ai_manager
-from .base_provider import AIResponse, AIProviderError
 
 logger = get_logger(__name__)
 
@@ -168,8 +174,8 @@ class AIService:
         Returns:
             Lista de mensagens com contexto injetado
         """
-        from datetime import datetime
         import locale
+        from datetime import datetime
         
         # Copiar para não alterar a lista original
         enriched = list(messages)
@@ -402,7 +408,7 @@ class AIService:
     ):
         """Loga interação no banco de dados."""
         try:
-            from database import get_db_manager, AIInteractionRepository
+            from database import AIInteractionRepository, get_db_manager
             
             db = get_db_manager()
             with db.get_session() as session:

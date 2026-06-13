@@ -5,9 +5,10 @@ As notificações são salvas no banco e carregadas quando o dropdown é aberto.
 
 import json
 import uuid
-from typing import Optional, Dict, List
 from datetime import datetime
 from enum import Enum
+from typing import Dict, List, Optional
+
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -210,8 +211,9 @@ class WebNotificationManager:
     def _cleanup_old_notifications(self, session):
         """Remove notificações antigas mantendo apenas as mais recentes."""
         try:
-            from database.models import Notification
             from sqlalchemy import func
+
+            from database.models import Notification
             
             count = session.query(func.count(Notification.id)).scalar()
             
@@ -268,8 +270,9 @@ class WebNotificationManager:
     def get_unread_count(self) -> int:
         """Retorna contagem de não lidas do banco."""
         try:
-            from database.models import Notification
             from sqlalchemy import func
+
+            from database.models import Notification
             db = self._get_db()
             
             with db.get_session() as session:

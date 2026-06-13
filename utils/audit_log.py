@@ -11,11 +11,12 @@ Funcionalidades:
 
 import json
 import threading
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from functools import wraps
+from typing import Any, Dict, List, Optional
+
 from loguru import logger
 
 

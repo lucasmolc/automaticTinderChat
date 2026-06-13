@@ -162,10 +162,12 @@ O CI no GitHub Actions roda a suite em Python 3.9, 3.11 e 3.12 a cada push/PR.
 ## 🗺️ Roadmap
 
 - [x] Banco plugável: SQLite por padrão, PostgreSQL/SQL Server opcionais
+- [x] Tooling de qualidade (ruff, pyproject) e limpeza de dependências
+- [x] UI — Fase 1: CSS/JS extraídos para arquivos + design tokens
+- [ ] UI — Fases 2-4: HTMX/Alpine, redesign visual, modais nativos
+- [ ] Backend: app factory + Blueprints (quebrar `web/app.py`)
 - [ ] Flask → FastAPI (async nativo + OpenAPI automático)
-- [ ] Redesign da interface (HTMX + Alpine.js + design tokens)
-- [ ] Migrações com Alembic
-- [ ] Docker Compose para onboarding em um comando
+- [ ] Migrações com Alembic e Docker Compose
 
 Detalhes e justificativas em [docs/TECHNOLOGY.md](docs/TECHNOLOGY.md).
 

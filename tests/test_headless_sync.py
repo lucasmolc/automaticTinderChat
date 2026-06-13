@@ -9,9 +9,10 @@ Cobre:
 - _run_migrations (migrações de banco)
 """
 
-import pytest
 from datetime import datetime
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from database.models import Base, Match, Message
 from database.repositories import active_match_filter
@@ -63,7 +64,7 @@ class TestResetBrowser:
     
     def test_reset_browser_clears_singleton(self):
         """Testa que reset_browser limpa o singleton."""
-        from automation.browser import get_browser, reset_browser, _browser
+        from automation.browser import _browser, get_browser, reset_browser
         
         # Obter instância
         browser1 = get_browser()

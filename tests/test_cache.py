@@ -3,10 +3,11 @@ Testes para o módulo utils/cache.py.
 Testa LRUCache, SingletonCache e funções de conveniência.
 """
 
-import pytest
 import time
 from datetime import datetime
 from threading import Thread
+
+import pytest
 
 
 class TestLRUCache:

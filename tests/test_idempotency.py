@@ -10,19 +10,20 @@ Este arquivo contém testes críticos para garantir que:
 IMPORTANTE: Estes testes são CRÍTICOS para a confiabilidade do sistema.
 """
 
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
-from datetime import datetime, timedelta
 import threading
 import time
+from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+
+import pytest
 
 # Importar classes a serem testadas
 from automation.idempotency import (
-    IdempotencyGuard,
     IdempotencyCheckResult,
     IdempotencyError,
+    IdempotencyGuard,
     get_idempotency_guard,
-    verify_first_message_allowed
+    verify_first_message_allowed,
 )
 
 

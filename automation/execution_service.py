@@ -26,33 +26,45 @@ Separação de responsabilidades:
 
 import random
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Tuple
+from typing import Dict, List, Optional, Tuple
 
-from database import (
-    get_db_manager, MatchRepository, MessageRepository,
-    AIInteractionRepository, Match, Message
-)
 from ai import get_openai_client
-from utils.logger import (
-    get_logger, log_automation_step, log_ai_decision, log_file_only,
-    console_matches_loaded, console_processing_match,
-    console_message_sent, console_message_skipped,
-    console_error, console_warning, console_waiting,
-    console_whatsapp_detected, console_stats
+from config import get_settings
+from database import (
+    AIInteractionRepository,
+    Match,
+    MatchRepository,
+    Message,
+    MessageRepository,
+    get_db_manager,
 )
 from utils.helpers import safe_json_dumps
-from utils.whatsapp_detector import analyze_message_for_progression
+from utils.logger import (
+    console_error,
+    console_matches_loaded,
+    console_message_sent,
+    console_message_skipped,
+    console_processing_match,
+    console_stats,
+    console_waiting,
+    console_warning,
+    console_whatsapp_detected,
+    get_logger,
+    log_ai_decision,
+    log_automation_step,
+    log_file_only,
+)
 from utils.notifications import notify
-from config import get_settings
+from utils.whatsapp_detector import analyze_message_for_progression
 
-from .match_data_service import MatchDataService
-from .match_validation import MatchValidator, validate_ai_message, validate_ai_message_with_context
 from .idempotency import (
-    get_idempotency_guard, 
     IdempotencyCheckResult,
     IdempotencyError,
-    verify_first_message_allowed
+    get_idempotency_guard,
+    verify_first_message_allowed,
 )
+from .match_data_service import MatchDataService
+from .match_validation import MatchValidator, validate_ai_message, validate_ai_message_with_context
 from .state_manager import get_state_manager
 
 # A/B Testing - importar condicionalmente

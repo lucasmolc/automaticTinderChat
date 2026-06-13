@@ -4,10 +4,10 @@ Logging Guidelines - Padrões para uso de níveis de log no projeto.
 Este módulo define constantes e helpers para logging consistente.
 """
 
-from enum import Enum
-from typing import Optional, Dict, Any
-from functools import wraps
 import traceback
+from enum import Enum
+from functools import wraps
+from typing import Any, Dict, Optional
 
 from utils.logger import get_logger
 

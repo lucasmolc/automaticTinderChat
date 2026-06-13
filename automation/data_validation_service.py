@@ -11,8 +11,8 @@ Usado pelo SYNC para garantir que apenas dados válidos são persistidos.
 """
 
 import re
-from typing import Optional, Dict, Tuple, List
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
 from utils.logger import get_logger
 

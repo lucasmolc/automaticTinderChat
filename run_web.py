@@ -3,8 +3,8 @@ Script para iniciar o servidor web.
 Execute com: python run_web.py
 """
 
-import sys
 import os
+import sys
 
 # Adicionar diretório ao path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

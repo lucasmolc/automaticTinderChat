@@ -6,8 +6,8 @@ Módulo especializado com validators reutilizáveis.
 from typing import Optional, Tuple
 
 from database import Match
-from utils.logger import get_logger
 from utils.helpers import calculate_days_since
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

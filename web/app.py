@@ -9,14 +9,15 @@ Funcionalidades:
 - Audit Logging para segurança
 """
 
-from flask import Flask, render_template, jsonify, request
-from flask_cors import CORS
-from datetime import datetime, timedelta
-from loguru import logger
-import sys
-import os
 import asyncio
+import os
+import sys
 import threading
+from datetime import datetime, timedelta
+
+from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
+from loguru import logger
 
 # Rate limiting
 try:
@@ -42,7 +43,7 @@ except Exception as e:
 
 # Prometheus metrics
 try:
-    from utils.metrics import init_metrics, get_metrics_collector
+    from utils.metrics import get_metrics_collector, init_metrics
     METRICS_ENABLED = True
 except ImportError:
     METRICS_ENABLED = False
@@ -58,7 +59,12 @@ except ImportError:
 
 # Audit logging
 try:
-    from utils.audit_log import get_audit_logger, AuditAction, audit_automation_start, audit_automation_stop
+    from utils.audit_log import (
+        AuditAction,
+        audit_automation_start,
+        audit_automation_stop,
+        get_audit_logger,
+    )
     AUDIT_ENABLED = True
 except ImportError:
     AUDIT_ENABLED = False
@@ -66,7 +72,7 @@ except ImportError:
 
 # Background Tasks (alternativa leve ao Celery)
 try:
-    from utils.background_tasks import get_task_manager, submit_task, schedule_task
+    from utils.background_tasks import get_task_manager, schedule_task, submit_task
     BACKGROUND_TASKS_ENABLED = True
 except ImportError:
     BACKGROUND_TASKS_ENABLED = False
@@ -75,12 +81,13 @@ except ImportError:
 # Adicionar diretório pai ao path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from sqlalchemy import desc, func
+
+from automation.state_manager import get_state_manager
 from database import DatabaseManager, MatchRepository, MessageRepository, MyProfileRepository
 from database.models import Match, Message, MyProfile
-from sqlalchemy import func, desc
-from utils.notifications import get_notification_manager
 from utils.helpers import clean_message_preview
-from automation.state_manager import get_state_manager
+from utils.notifications import get_notification_manager
 
 app = Flask(__name__)
 
@@ -339,8 +346,11 @@ if limiter:
 
 # Importar sanitizador de inputs
 from utils.input_sanitizer import (
-    sanitize_search_input, sanitize_integer, sanitize_boolean,
-    sanitize_sort_field, sanitize_pagination
+    sanitize_boolean,
+    sanitize_integer,
+    sanitize_pagination,
+    sanitize_search_input,
+    sanitize_sort_field,
 )
 
 
@@ -365,7 +375,7 @@ def api_matches():
         with db.get_session() as session:
             # Ordenar: primeiro por matched_at DESC (mais recente primeiro)
             # Perfis SEM data vão para o final (ordenados por created_at)
-            from sqlalchemy import case, nullslast, or_, and_
+            from sqlalchemy import and_, case, nullslast, or_
             query = session.query(Match).order_by(
                 # Primeiro ordena por ter ou não data (quem tem data vem primeiro)
                 case((Match.matched_at != None, 0), else_=1),
@@ -637,9 +647,10 @@ def api_match_profile(match_id):
 def api_match_report(match_id):
     """Retorna o relatório mais recente de um match ou gera um novo se solicitado."""
     try:
-        from database import MatchReportRepository
-        from ai import get_ai_manager, BudgetExceededError, AIProviderError
         import json
+
+        from ai import AIProviderError, BudgetExceededError, get_ai_manager
+        from database import MatchReportRepository
         
         # Parâmetro para forçar geração de novo relatório
         force_generate = request.args.get('generate', 'false').lower() == 'true'
@@ -1435,11 +1446,16 @@ def api_update_match_status(match_id):
                     def generate_report_async():
                         # Usar nova sessão para thread separada
                         try:
-                            from ai import get_openai_client
                             import json
+
+                            from ai import get_openai_client
                             
                             with db.get_session() as async_session:
-                                from database.repositories import MatchRepository, MessageRepository, MatchReportRepository
+                                from database.repositories import (
+                                    MatchReportRepository,
+                                    MatchRepository,
+                                    MessageRepository,
+                                )
                                 match_repo = MatchRepository(async_session)
                                 msg_repo = MessageRepository(async_session)
                                 report_repo = MatchReportRepository(async_session)
@@ -2107,8 +2123,9 @@ def api_set_ai_model(provider_id):
 def api_configure_ai_provider(provider_id):
     """Configura um provedor de IA com nova API key."""
     try:
-        from ai import get_ai_manager
         import os
+
+        from ai import get_ai_manager
         
         data = request.get_json() or {}
         api_key = data.get('api_key')
@@ -2154,7 +2171,7 @@ def api_configure_ai_provider(provider_id):
 def api_test_ai():
     """Testa a conexão com o provedor de IA ativo."""
     try:
-        from ai import get_ai_manager, AIProviderError, BudgetExceededError
+        from ai import AIProviderError, BudgetExceededError, get_ai_manager
         
         manager = get_ai_manager()
         provider = manager.get_active_provider()

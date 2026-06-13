@@ -7,9 +7,10 @@ Testa:
 - DataValidationService: Validação de dados
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from automation.data_validation_service import DataValidationService
 from automation.match_data_service import MatchDataService

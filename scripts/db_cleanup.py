@@ -14,15 +14,15 @@ USO:
 """
 
 import argparse
-import sys
 import os
+import sys
 from datetime import datetime
 from typing import Dict, List, Tuple
 
 # Adicionar path do projeto
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import get_db_manager, Match, Message
+from database import Match, Message, get_db_manager
 
 
 def analyze_inconsistencies(session) -> Dict:

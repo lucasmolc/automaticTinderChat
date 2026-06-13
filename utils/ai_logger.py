@@ -3,15 +3,15 @@ AI Interaction Logger - Helper centralizado para logging de interações com IA.
 Evita duplicação de código ao registrar interações em diferentes partes do sistema.
 """
 
-from typing import Optional, Dict, Any, TYPE_CHECKING
 from datetime import datetime
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from utils.logger import get_logger
 from utils.helpers import safe_json_dumps
+from utils.logger import get_logger
 
 # Import lazy para evitar circular import
 if TYPE_CHECKING:
-    from database import DatabaseManager, AIInteractionRepository
+    from database import AIInteractionRepository, DatabaseManager
 
 logger = get_logger(__name__)
 
@@ -62,7 +62,7 @@ class AIInteractionLogger:
     def __enter__(self):
         """Inicia o logging da interação."""
         # Import lazy para evitar circular import
-        from database import get_db_manager, AIInteractionRepository
+        from database import AIInteractionRepository, get_db_manager
         
         self._start_time = datetime.utcnow()
         

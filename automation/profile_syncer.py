@@ -5,23 +5,33 @@ Refatoração do sync_matches_only() do orchestrator.py para código mais limpo 
 
 import asyncio
 from datetime import datetime
-from typing import Optional, Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from config import TINDER_MATCHES_URL
 from database import (
-    get_db_manager, MyProfileRepository, MatchRepository,
-    MessageRepository, Match, Message
-)
-from utils.logger import (
-    get_logger, log_file_only,
-    console_sync_start, console_sync_complete, console_matches_loaded,
-    console_processing_match, console_error, console_warning
+    Match,
+    MatchRepository,
+    Message,
+    MessageRepository,
+    MyProfileRepository,
+    get_db_manager,
 )
 from utils.helpers import clean_message_preview
+from utils.logger import (
+    console_error,
+    console_matches_loaded,
+    console_processing_match,
+    console_sync_complete,
+    console_sync_start,
+    console_warning,
+    get_logger,
+    log_file_only,
+)
+
 from .browser import BrowserController
+from .data_validation_service import DataValidationService
 from .extractors import TinderDataExtractor
 from .match_helpers import extract_complete_profile, get_profile_cache
-from .data_validation_service import DataValidationService
 
 # Importar funções compartilhadas para evitar duplicação
 from .tinder_scraping import navigate_to_match_chat, navigate_to_matches_page

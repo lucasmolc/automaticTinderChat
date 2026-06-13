@@ -11,12 +11,13 @@ Testa funcionalidades de:
 - Estatísticas de limpeza (CleanupStats)
 """
 
-import pytest
-import tempfile
 import shutil
-from pathlib import Path
-from datetime import datetime, timedelta
+import tempfile
 import threading
+from datetime import datetime, timedelta
+from pathlib import Path
+
+import pytest
 
 
 class TestLogCleanerFileOperations:
@@ -156,7 +157,7 @@ class TestLogCleanerRetention:
     
     def test_enforce_size_limit_removes_when_exceeded(self, temp_logs_dir):
         """Testa que limite de tamanho remove arquivos mais antigos."""
-        from utils.log_cleaner import LogCleaner, CleanupStats
+        from utils.log_cleaner import CleanupStats, LogCleaner
         
         cleaner = LogCleaner(
             logs_dir=temp_logs_dir,

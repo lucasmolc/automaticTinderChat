@@ -3,11 +3,7 @@ Serviço de Notificações do Automatic Tinder Chat.
 Gerencia notificações em tempo real via WebSocket.
 """
 
-from utils.notifications import (
-    WebNotificationManager,
-    get_notification_manager,
-    NotificationType
-)
+from utils.notifications import NotificationType, WebNotificationManager, get_notification_manager
 
 # Alias para compatibilidade
 NotificationManager = WebNotificationManager

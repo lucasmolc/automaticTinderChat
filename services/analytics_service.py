@@ -3,15 +3,15 @@ Serviço de Analytics do Automatic Tinder Chat.
 Centraliza métricas, estatísticas e análises de dados.
 """
 
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
 from database import get_db_manager
-from database.models import Match, Message, AIInteraction, ExecutionLog
-from utils.logger import get_logger
-from utils.ab_testing import get_ab_manager
+from database.models import AIInteraction, ExecutionLog, Match, Message
 from services.ml_adaptive import get_ml_service
+from utils.ab_testing import get_ab_manager
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

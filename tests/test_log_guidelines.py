@@ -43,7 +43,7 @@ class TestLogOperationFunction:
     
     def test_log_operation_with_success(self):
         """Testa log_operation sem erro (sucesso)."""
-        from utils.log_guidelines import log_operation, LogContext
+        from utils.log_guidelines import LogContext, log_operation
         
         # Não deve levantar exceção
         log_operation(
@@ -54,7 +54,7 @@ class TestLogOperationFunction:
     
     def test_log_operation_with_failure(self):
         """Testa log_operation com erro (falha)."""
-        from utils.log_guidelines import log_operation, LogContext
+        from utils.log_guidelines import LogContext, log_operation
         
         log_operation(
             context=LogContext.DATABASE,
@@ -69,7 +69,7 @@ class TestLogWithContextDecorator:
     
     def test_decorated_function_returns_result(self):
         """Testa que função decorada retorna resultado."""
-        from utils.log_guidelines import log_with_context, LogContext
+        from utils.log_guidelines import LogContext, log_with_context
         
         @log_with_context(LogContext.AI)
         def sample_function():
@@ -81,7 +81,7 @@ class TestLogWithContextDecorator:
     
     def test_decorated_function_propagates_exception(self):
         """Testa que função decorada propaga exceções."""
-        from utils.log_guidelines import log_with_context, LogContext
+        from utils.log_guidelines import LogContext, log_with_context
         
         @log_with_context(LogContext.AI)
         def error_function():

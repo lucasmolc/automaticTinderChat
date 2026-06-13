@@ -16,6 +16,7 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 
 from config import get_settings
