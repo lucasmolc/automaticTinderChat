@@ -14,10 +14,17 @@ import pytest
 # Adicionar diretório raiz ao path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+# Importa o submódulo do navegador no nível do conftest (executado na coleta,
+# antes de qualquer teste). Garante que `automation.browser` esteja registrado
+# como atributo de `automation`, de modo que patches por string do tipo
+# `patch("automation.browser.X")` resolvam em qualquer ordem de coleta e versão
+# de Python (no CI 3.9 isso falhava de forma intermitente).
+import automation.browser  # noqa: E402,F401
 
-from database.models import Base, Match, Message, MyProfile
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+
+from database.models import Base, Match, Message, MyProfile  # noqa: E402
 
 # ============================================
 # Rede de segurança: nenhum teste deve lançar um navegador real
