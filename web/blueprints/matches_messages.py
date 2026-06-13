@@ -12,72 +12,37 @@ bp_matches_messages = Blueprint("matches_messages", __name__)
 
 # ===================== API - ESTATÍSTICAS =====================
 
+def compute_dashboard_stats(session) -> dict:
+    """Calcula as métricas do dashboard a partir de uma sessão aberta.
+
+    Compartilhado entre /api/stats (JSON) e /fragments/stats (HTML via HTMX).
+    """
+    def count(*filters):
+        q = session.query(func.count(Match.id))
+        return (q.filter(*filters).scalar() if filters else q.scalar()) or 0
+
+    def count_msgs(condition):
+        return session.query(func.count(Message.id)).filter(condition).scalar() or 0
+
+    return {
+        'total_matches': count(),
+        'blocked_matches': count(Match.is_blocked == True),
+        'awaiting_response': count(Match.awaiting_my_response == True, Match.is_blocked != True),
+        'new_matches': count(Match.has_messages == False, Match.is_blocked != True),
+        'messages_sent': count_msgs(Message.is_from_me == True),
+        'messages_received': count_msgs(Message.is_from_me == False),
+        'whatsapp_obtained': count(Match.whatsapp_obtained == True),
+        'active_matches': count(Match.has_messages == True, Match.is_blocked != True),
+        'pending_resend': count(Match.pending_resend == True, Match.is_blocked != True),
+    }
+
+
 @bp_matches_messages.route('/api/stats')
 def api_stats():
-    """Retorna estatísticas gerais."""
+    """Retorna estatísticas gerais (JSON)."""
     try:
         with webapp.db.get_session() as session:
-            # Total de matches
-            total_matches = session.query(func.count(Match.id)).scalar() or 0
-            
-            # Matches bloqueados
-            blocked_matches = session.query(func.count(Match.id)).filter(
-                Match.is_blocked == True
-            ).scalar() or 0
-            
-            # Matches aguardando resposta
-            awaiting_response = session.query(func.count(Match.id)).filter(
-                Match.awaiting_my_response == True,
-                Match.is_blocked != True
-            ).scalar() or 0
-            
-            # Matches novos (sem mensagens)
-            new_matches = session.query(func.count(Match.id)).filter(
-                Match.has_messages == False,
-                Match.is_blocked != True
-            ).scalar() or 0
-            
-            # Total de mensagens enviadas
-            messages_sent = session.query(func.count(Message.id)).filter(
-                Message.is_from_me == True
-            ).scalar() or 0
-            
-            # Total de mensagens recebidas
-            messages_received = session.query(func.count(Message.id)).filter(
-                Message.is_from_me == False
-            ).scalar() or 0
-            
-            # WhatsApp obtidos
-            whatsapp_obtained = session.query(func.count(Match.id)).filter(
-                Match.whatsapp_obtained == True
-            ).scalar() or 0
-            
-            # Matches ativos (com mensagens, não bloqueados)
-            active_matches = session.query(func.count(Match.id)).filter(
-                Match.has_messages == True,
-                Match.is_blocked != True
-            ).scalar() or 0
-            
-            # Matches pendentes de reenvio
-            pending_resend = session.query(func.count(Match.id)).filter(
-                Match.pending_resend == True,
-                Match.is_blocked != True
-            ).scalar() or 0
-            
-            return jsonify({
-                'success': True,
-                'data': {
-                    'total_matches': total_matches,
-                    'blocked_matches': blocked_matches,
-                    'awaiting_response': awaiting_response,
-                    'new_matches': new_matches,
-                    'messages_sent': messages_sent,
-                    'messages_received': messages_received,
-                    'whatsapp_obtained': whatsapp_obtained,
-                    'active_matches': active_matches,
-                    'pending_resend': pending_resend
-                }
-            })
+            return jsonify({'success': True, 'data': compute_dashboard_stats(session)})
     except Exception as e:
         logger.error(f"Erro ao buscar stats: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

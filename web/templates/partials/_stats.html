@@ -1,0 +1,62 @@
+{# Cards de estatísticas do dashboard — renderizado via HTMX (/fragments/stats). #}
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in">
+            <div class="icon pink"><i class="bi bi-heart-fill"></i></div>
+            <div class="value">{{ stats.total_matches }}</div>
+            <div class="label">Total de Matches</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.1s">
+            <div class="icon green"><i class="bi bi-person-plus-fill"></i></div>
+            <div class="value">{{ stats.new_matches }}</div>
+            <div class="label">Matches Novos</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.2s">
+            <div class="icon yellow"><i class="bi bi-hourglass-split"></i></div>
+            <div class="value">{{ stats.awaiting_response }}</div>
+            <div class="label">Aguardando Resposta</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.3s">
+            <div class="icon purple"><i class="bi bi-whatsapp"></i></div>
+            <div class="value">{{ stats.whatsapp_obtained }}</div>
+            <div class="label">WhatsApp Obtidos</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.4s">
+            <div class="icon blue"><i class="bi bi-chat-left-text-fill"></i></div>
+            <div class="value">{{ stats.active_matches }}</div>
+            <div class="label">Matches Ativos</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.5s">
+            <div class="icon green"><i class="bi bi-send-fill"></i></div>
+            <div class="value">{{ stats.messages_sent }}</div>
+            <div class="label">Mensagens Enviadas</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.6s">
+            <div class="icon orange"><i class="bi bi-envelope-fill"></i></div>
+            <div class="value">{{ stats.messages_received }}</div>
+            <div class="label">Mensagens Recebidas</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card fade-in" style="animation-delay: 0.7s">
+            <div class="icon pink"><i class="bi bi-slash-circle-fill"></i></div>
+            <div class="value">{{ stats.blocked_matches }}</div>
+            <div class="label">Matches Bloqueados</div>
+        </div>
+    </div>
+</div>

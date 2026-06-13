@@ -15,82 +15,13 @@
     </div>
 </div>
 
-<!-- Stat Cards -->
-<div class="row g-4 mb-4">
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in">
-            <div class="icon pink">
-                <i class="bi bi-heart-fill"></i>
-            </div>
-            <div class="value" id="stat-matches">-</div>
-            <div class="label">Total de Matches</div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in" style="animation-delay: 0.1s">
-            <div class="icon green">
-                <i class="bi bi-person-plus-fill"></i>
-            </div>
-            <div class="value" id="stat-new">-</div>
-            <div class="label">Matches Novos</div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in" style="animation-delay: 0.2s">
-            <div class="icon yellow">
-                <i class="bi bi-hourglass-split"></i>
-            </div>
-            <div class="value" id="stat-awaiting">-</div>
-            <div class="label">Aguardando Resposta</div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in" style="animation-delay: 0.3s">
-            <div class="icon purple">
-                <i class="bi bi-whatsapp"></i>
-            </div>
-            <div class="value" id="stat-whatsapp">-</div>
-            <div class="label">WhatsApp Obtidos</div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mb-4">
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in" style="animation-delay: 0.4s">
-            <div class="icon blue">
-                <i class="bi bi-chat-left-text-fill"></i>
-            </div>
-            <div class="value" id="stat-active">-</div>
-            <div class="label">Matches Ativos</div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in" style="animation-delay: 0.5s">
-            <div class="icon green">
-                <i class="bi bi-send-fill"></i>
-            </div>
-            <div class="value" id="stat-sent">-</div>
-            <div class="label">Mensagens Enviadas</div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in" style="animation-delay: 0.6s">
-            <div class="icon orange">
-                <i class="bi bi-envelope-fill"></i>
-            </div>
-            <div class="value" id="stat-received">-</div>
-            <div class="label">Mensagens Recebidas</div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card fade-in" style="animation-delay: 0.7s">
-            <div class="icon pink">
-                <i class="bi bi-slash-circle-fill"></i>
-            </div>
-            <div class="value" id="stat-blocked">-</div>
-            <div class="label">Matches Bloqueados</div>
-        </div>
+<!-- Stat Cards (carregados via HTMX a partir de /fragments/stats) -->
+<div id="stats-container"
+     hx-get="/fragments/stats"
+     hx-trigger="load, every 30s"
+     hx-swap="innerHTML">
+    <div class="loading-spinner py-4">
+        <div class="spinner-border" role="status"></div>
     </div>
 </div>
 
@@ -168,43 +99,25 @@
 
 {% block extra_js %}
 <script>
-    // Load stats on page load
+    // As estatísticas são carregadas/atualizadas via HTMX (#stats-container).
+    // Aqui cuidamos apenas das tabelas de atividade recente.
     document.addEventListener('DOMContentLoaded', function() {
-        loadStats();
         loadRecentMatches();
         loadRecentMessages();
-        
+
         // Auto refresh every 30 seconds
         setInterval(refreshData, 30000);
     });
-    
+
     function refreshData() {
-        loadStats();
+        // Recarrega as stats via HTMX e as tabelas via fetch.
+        if (window.htmx) {
+            htmx.ajax('GET', '/fragments/stats', { target: '#stats-container', swap: 'innerHTML' });
+        }
         loadRecentMatches();
         loadRecentMessages();
     }
-    
-    async function loadStats() {
-        try {
-            const response = await fetch('/api/stats');
-            const result = await response.json();
-            
-            if (result.success) {
-                const data = result.data;
-                document.getElementById('stat-matches').textContent = data.total_matches;
-                document.getElementById('stat-new').textContent = data.new_matches;
-                document.getElementById('stat-awaiting').textContent = data.awaiting_response;
-                document.getElementById('stat-whatsapp').textContent = data.whatsapp_obtained;
-                document.getElementById('stat-active').textContent = data.active_matches;
-                document.getElementById('stat-sent').textContent = data.messages_sent;
-                document.getElementById('stat-received').textContent = data.messages_received;
-                document.getElementById('stat-blocked').textContent = data.blocked_matches;
-            }
-        } catch (error) {
-            console.error('Erro ao carregar stats:', error);
-        }
-    }
-    
+
     async function loadRecentMatches() {
         try {
             const response = await fetch('/api/matches?limit=5');

@@ -207,9 +207,11 @@ def run_web_server(host='0.0.0.0', port=5000, debug=False):
 from web.blueprints.matches_messages import bp_matches_messages  # noqa: E402
 from web.blueprints.operations import bp_operations  # noqa: E402
 from web.blueprints.api_extra import bp_api_extra  # noqa: E402
+from web.blueprints.fragments import bp_fragments  # noqa: E402
 app.register_blueprint(bp_matches_messages)
 app.register_blueprint(bp_operations)
 app.register_blueprint(bp_api_extra)
+app.register_blueprint(bp_fragments)
 
 if __name__ == '__main__':
     run_web_server(debug=True)
