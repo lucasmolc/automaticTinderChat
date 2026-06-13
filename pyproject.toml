@@ -32,6 +32,9 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B011", "F401", "F811"]
 "__init__.py" = ["F401"]
+# Blueprints reaproveitam os globais de web/app.py via `import *` (padrão
+# deliberado para não reescrever os corpos das rotas e preservar os testes).
+"web/blueprints/*.py" = ["F403", "F405", "F401", "E402"]
 
 [tool.ruff.format]
 quote-style = "double"
