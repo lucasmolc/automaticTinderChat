@@ -89,151 +89,25 @@ from database.models import Match, Message, MyProfile
 from utils.helpers import clean_message_preview
 from utils.notifications import get_notification_manager
 
-app = Flask(__name__)
+# ----------------------------------------------------------------------
+# App e estado compartilhado — ver web/extensions.py e web/factory.py
+# ----------------------------------------------------------------------
+from web import extensions
+from web.extensions import (
+    add_log,
+    automation_state,
+    db,
+    emit_automation_status,
+    emit_notification,
+    emit_stats_update,
+    rate_limit,
+    _sync_matches_task,
+)
+from web.factory import create_app
 
-# WebSocket initialization
-socketio = None
-if WEBSOCKET_ENABLED:
-    socketio = create_socketio(app)
-    logger.debug("✅ WebSocket habilitado")
-
-# CORS restrito - apenas origens permitidas
-CORS(app, origins=[
-    'http://localhost:5000',
-    'http://127.0.0.1:5000',
-    'http://localhost:3000',  # Dev frontend se houver
-])
-
-# Configurações
-app.config['JSON_AS_ASCII'] = False
-app.config['TEMPLATES_AUTO_RELOAD'] = True
-
-# Prometheus metrics initialization
-if METRICS_ENABLED:
-    init_metrics(app)
-    logger.debug("✅ Prometheus metrics habilitado")
-
-# A/B Testing setup
-if AB_TESTING_ENABLED:
-    setup_default_experiments()
-    logger.debug("✅ A/B Testing habilitado")
-
-# Rate limiting configuração com suporte a Redis
-if RATE_LIMITING_ENABLED:
-    from utils.rate_limiter import RateLimitConfig
-    
-    limiter = Limiter(
-        key_func=get_remote_address,
-        app=app,
-        default_limits=RateLimitConfig.get_default_limits(),
-        storage_uri=RateLimitConfig.get_storage_uri()
-    )
-else:
-    limiter = None
-
-
-def rate_limit(limit_string):
-    """Decorator condicional de rate limiting."""
-    def decorator(f):
-        if limiter:
-            return limiter.limit(limit_string)(f)
-        return f
-    return decorator
-
-# Database
-db = DatabaseManager()
-db.initialize()  # Inicializar banco na importação
-
-# Estado em memória para dados NÃO-CRÍTICOS (logs, resultados)
-# IMPORTANTE: O estado de is_running/is_syncing/should_stop é gerenciado
-# pelo AutomationStateManager (persistido em arquivo) para sobreviver a refreshes
-automation_state = {
-    'is_running': False,      # DEPRECATED: usar state_manager.is_running
-    'is_syncing': False,      # DEPRECATED: usar state_manager.is_syncing
-    'last_result': None,      # Último resultado da automação (apenas em memória)
-    'last_sync_result': None, # Último resultado do sync (apenas em memória)
-    'logs': []                # Logs em memória (não persistidos)
-}
-
-
-def add_log(message: str, level: str = 'info'):
-    """Adiciona log ao estado global e persiste os últimos logs."""
-    log_entry = {
-        'timestamp': datetime.now().strftime('%H:%M:%S'),
-        'message': message,
-        'level': level
-    }
-    automation_state['logs'].append(log_entry)
-    # Manter apenas os últimos 100 logs
-    if len(automation_state['logs']) > 100:
-        automation_state['logs'] = automation_state['logs'][-100:]
-    
-    # Log também no logger para persistência
-    if level == 'error':
-        logger.error(f"[UI] {message}")
-    elif level == 'warning':
-        logger.warning(f"[UI] {message}")
-    elif level == 'success':
-        logger.success(f"[UI] {message}")
-    else:
-        logger.info(f"[UI] {message}")
-
-
-# ===================== BACKGROUND TASKS SETUP =====================
-
-def _sync_matches_task():
-    """Task de sincronização de matches para execução em background."""
-    from automation import sync_matches_only
-    
-    automation_state['is_syncing'] = True
-    add_log('🔄 [Background] Sincronização iniciada...', 'info')
-    
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(sync_matches_only())
-        loop.close()
-        
-        automation_state['last_sync_result'] = result
-        
-        if result.get('success'):
-            add_log(
-                f'✅ [Background] Sync concluído! Matches: {result.get("total_matches", 0)}, '
-                f'Novos: {result.get("new_matches", 0)}', 
-                'success'
-            )
-            
-            # Notificar via WebSocket se disponível
-            if WEBSOCKET_ENABLED:
-                try:
-                    ws_notifier = get_websocket_notifier()
-                    ws_notifier.emit_notification({
-                        'type': 'sync_completed',
-                        'title': 'Sincronização Concluída',
-                        'message': f'Encontrados {result.get("new_matches", 0)} novos matches!',
-                        'data': result
-                    })
-                except Exception:
-                    pass
-        else:
-            add_log(f'❌ [Background] Erro no sync: {result.get("error", "Desconhecido")}', 'error')
-            
-        return result
-        
-    except Exception as e:
-        error_result = {'success': False, 'error': str(e)}
-        automation_state['last_sync_result'] = error_result
-        add_log(f'❌ [Background] Erro: {str(e)}', 'error')
-        return error_result
-        
-    finally:
-        automation_state['is_syncing'] = False
-
-
-# Inicializar Background Tasks (sem sync automático)
-if BACKGROUND_TASKS_ENABLED:
-    task_manager = get_task_manager()
-    logger.debug("✅ Background Tasks habilitado")
+app = create_app()
+socketio = extensions.socketio
+limiter = extensions.limiter
 
 
 # ===================== PÁGINAS =====================
@@ -3278,38 +3152,6 @@ def api_activity_heatmap():
     except Exception as e:
         logger.error(f"Erro ao gerar heatmap: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
-
-
-# ===================== WEBSOCKET EVENTS =====================
-
-def emit_notification(notification_type: str, data: dict):
-    """Emite notificação via WebSocket se disponível."""
-    if WEBSOCKET_ENABLED and socketio:
-        try:
-            notifier = get_websocket_notifier()
-            notifier.notify(notification_type, data)
-        except Exception as e:
-            logger.warning(f"Erro ao emitir WebSocket: {e}")
-
-
-def emit_stats_update(stats: dict):
-    """Emite atualização de estatísticas."""
-    if WEBSOCKET_ENABLED and socketio:
-        try:
-            notifier = get_websocket_notifier()
-            notifier.broadcast_stats(stats)
-        except Exception as e:
-            logger.warning(f"Erro ao emitir stats: {e}")
-
-
-def emit_automation_status(status: dict):
-    """Emite status da automação."""
-    if WEBSOCKET_ENABLED and socketio:
-        try:
-            notifier = get_websocket_notifier()
-            notifier.broadcast_automation_status(status)
-        except Exception as e:
-            logger.warning(f"Erro ao emitir automation status: {e}")
 
 
 if __name__ == '__main__':
