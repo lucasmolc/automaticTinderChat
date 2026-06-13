@@ -157,13 +157,14 @@ class TestNavigationOptimization:
         controller.page = mock_page
         # Marca como inicializado para que navigate_to use a página mockada
         # em vez de lançar um navegador real (que não existe no CI).
+        # Os pequenos delays internos (asyncio.sleep / async_random_delay) rodam
+        # de verdade aqui — propositalmente, para não depender de patch por string
+        # (que falha conforme a ordem de import no Python 3.9).
         controller._is_initialized = True
 
-        with patch("automation.browser.asyncio.sleep", new=AsyncMock()), \
-             patch("automation.browser.async_random_delay", new=AsyncMock()):
-            result = await controller.navigate_to_matches_if_needed()
+        result = await controller.navigate_to_matches_if_needed()
 
-        assert result == True  # Navegou
+        assert result is True  # Navegou
         mock_page.goto.assert_called_once()
     
     @pytest.mark.asyncio
