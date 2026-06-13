@@ -923,15 +923,6 @@ class TinderDataExtractor:
             # Extrair DATA DO MATCH ("Você deu match com Nome em: Data")
             # =====================================================
             try:
-                # Buscar elemento que contém a data do match
-                match_date_selectors = [
-                    '[class*="matchDate"]',
-                    '[class*="MatchDate"]',
-                    '[class*="timestamp"]',
-                    'span[class*="C($c-secondary)"]',
-                    'div[class*="Fz($xs)"]'
-                ]
-                
                 page_text = await self.page.inner_text('body')
                 
                 # Padrão: "Você deu match com Nome em: DD/MM/YYYY" ou "em DD/MM/YYYY"
@@ -2318,7 +2309,7 @@ class TinderDataExtractor:
         
         try:
             # Navegar para conversa APENAS se necessário
-            nav_success = await self._navigate_to_match_if_needed(match_id)
+            await self._navigate_to_match_if_needed(match_id)
             logger.debug(f"[SEND_MESSAGE] Navegação completa, URL atual: {self.page.url}")
             await async_random_delay(0.5, 1)
             
